@@ -2,6 +2,7 @@
   "name": "credits-admin",
   "version": "1.0.0",
   "description": "Administration des crédits vidéos",
+  "author": "nathbu92",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
@@ -36,8 +37,8 @@
       "allowToChangeInstallationDirectory": true,
       "installerIcon": "src/assets/icon.ico",
       "uninstallerIcon": "src/assets/icon.ico",
-      "installerSidebarImage": "src/assets/installer-sidebar.bmp",
-      "installerHeaderImage": "src/assets/installer-header.bmp",
+      "installerSidebar": "src/assets/installer-sidebar.bmp",
+      "installerHeader": "src/assets/installer-header.bmp",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Crédits Admin",
