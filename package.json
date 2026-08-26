@@ -5,8 +5,9 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --win --x64",
-    "build:installer": "electron-builder --win nsis --x64"
+    "build:win": "electron-builder --win --x64",
+    "build:mac": "electron-builder --mac --x64 --arm64",
+    "build:all": "electron-builder --win --mac --x64"
   },
   "build": {
     "appId": "com.credits.admin",
@@ -20,13 +21,14 @@
     ],
     "win": {
       "target": [
-        {
-          "target": "nsis",
-          "arch": ["x64"]
-        }
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
       ],
       "icon": "src/assets/icon.ico",
       "requestedExecutionLevel": "asInvoker"
+    },
+    "portable": {
+      "artifactName": "${productName} Portable ${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -40,7 +42,20 @@
       "createStartMenuShortcut": true,
       "shortcutName": "Crédits Admin",
       "license": "LICENSE.txt",
-      "deleteAppDataOnUninstall": false
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "${productName} Setup ${version}.${ext}"
+    },
+    "mac": {
+      "target": [
+        { "target": "dmg", "arch": ["x64", "arm64"] },
+        { "target": "zip", "arch": ["x64", "arm64"] }
+      ],
+      "icon": "src/assets/icon.icns",
+      "category": "public.app-category.business",
+      "artifactName": "${productName} ${version} ${arch}.${ext}"
+    },
+    "dmg": {
+      "artifactName": "${productName} ${version} ${arch}.${ext}"
     },
     "extraResources": []
   },
