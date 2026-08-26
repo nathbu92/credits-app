@@ -77,7 +77,7 @@ jobs:
           "
 
       - name: Build (${{ matrix.os }})
-        run: ${{ matrix.build_cmd }}
+        run: ${{ matrix.build_cmd }} --publish never
         env:
           # Empêche electron-builder de tenter une signature/notarisation Apple
           CSC_IDENTITY_AUTO_DISCOVERY: false
