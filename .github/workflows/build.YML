@@ -1,0 +1,86 @@
+name: Build Crédits Admin
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "v*"
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            build_cmd: npx electron-builder --win nsis --win portable --x64
+          - os: macos-latest
+            build_cmd: npx electron-builder --mac dmg zip --x64 --arm64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Installer les dépendances
+        run: npm ci || npm install
+
+      - name: Vérifier la présence de l'icône macOS (icns)
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          if [ ! -f "src/assets/icon.icns" ]; then
+            echo "⚠️ src/assets/icon.icns absent : suppression de la référence d'icône pour ce build."
+            node -e "
+              const fs = require('fs');
+              const p = 'package.json';
+              const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
+              if (pkg.build && pkg.build.mac) delete pkg.build.mac.icon;
+              fs.writeFileSync(p, JSON.stringify(pkg, null, 2));
+            "
+          fi
+
+      - name: Build (${{ matrix.os }})
+        run: ${{ matrix.build_cmd }}
+        env:
+          # Empêche electron-builder de tenter une signature/notarisation Apple
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Lister le contenu de dist/
+        shell: bash
+        run: ls -la dist || true
+
+      - name: Upload des artefacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: credits-admin-${{ matrix.os }}
+          path: |
+            dist/*.exe
+            dist/*.dmg
+            dist/*.zip
+          if-no-files-found: warn
+
+  release:
+    name: Créer une Release (si tag v*)
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Télécharger tous les artefacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Publier la Release GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+          draft: true
+          generate_release_notes: true
