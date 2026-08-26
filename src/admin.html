@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Crédits</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500&display=swap');
+
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8d08a;
+    --dark: #0a0a0f;
+    --dark2: #11111a;
+    --dark3: #18181f;
+    --text: #e8e0d0;
+    --text-dim: #8a8070;
+    --red: #c87070;
+    --green: #7db87d;
+    --titlebar-h: 38px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--dark); color: var(--text); font-family: 'Raleway', sans-serif; min-height: 100vh; }
+
+  /* ── TITLEBAR ── */
+  #titlebar {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--titlebar-h);
+    background: #08080d;
+    border-bottom: 1px solid rgba(201,168,76,0.12);
+    display: flex; align-items: center; justify-content: space-between;
+    -webkit-app-region: drag;
+    z-index: 9999;
+    padding: 0 0 0 16px;
+    user-select: none;
+  }
+  .titlebar-left {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .titlebar-icon {
+    width: 14px; height: 14px;
+    border: 1px solid rgba(201,168,76,0.4);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .titlebar-icon::before {
+    content: '';
+    width: 4px; height: 4px;
+    background: rgba(201,168,76,0.5);
+    display: block;
+  }
+  .titlebar-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.58rem; letter-spacing: 0.4em;
+    color: rgba(201,168,76,0.5);
+    text-transform: uppercase;
+  }
+  .titlebar-controls {
+    display: flex; align-items: stretch;
+    height: var(--titlebar-h);
+    -webkit-app-region: no-drag;
+  }
+  .wbtn {
+    width: 46px; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; border: none; background: transparent;
+    color: rgba(232,224,208,0.3);
+    font-size: 0.75rem;
+    transition: all 0.15s;
+    -webkit-app-region: no-drag;
+  }
+  .wbtn:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+  .wbtn.close:hover { background: rgba(200,112,112,0.18); color: var(--red); }
+  .wbtn svg { width: 10px; height: 10px; }
+
+  /* offset pour titlebar */
+  #auth-screen { padding-top: calc(var(--titlebar-h) + 0px); }
+  #app { padding-top: var(--titlebar-h); }
+
+  /* ── AUTH SCREEN ── */
+  #auth-screen {
+    position: fixed; inset: 0; z-index: 200;
+    background: var(--dark);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 24px;
+    padding: 40px;
+  }
+  #auth-screen h2 {
+    font-family: 'Cinzel', serif; font-size: 1.1rem;
+    letter-spacing: 0.3em; color: var(--gold);
+  }
+  #auth-screen p { font-size: 0.78rem; color: var(--text-dim); letter-spacing: 0.08em; }
+  .auth-box {
+    background: var(--dark2); border: 1px solid rgba(201,168,76,0.2);
+    padding: 36px; width: 100%; max-width: 380px; position: relative;
+  }
+  .auth-box::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  /* ── LAYOUT ── */
+  #app { display: none; }
+  .topbar {
+    background: var(--dark2); border-bottom: 1px solid rgba(201,168,76,0.1);
+    padding: 14px 28px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .topbar-title {
+    font-family: 'Cinzel', serif; font-size: 0.85rem;
+    letter-spacing: 0.25em; color: var(--gold);
+  }
+  .topbar-actions { display: flex; gap: 10px; }
+  .main { max-width: 900px; margin: 0 auto; padding: 36px 24px 80px; }
+
+  /* ── VIEWS ── */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ── VIDEO LIST ── */
+  .section-title {
+    font-family: 'Cinzel', serif; font-size: 0.72rem;
+    letter-spacing: 0.4em; color: var(--gold); text-transform: uppercase;
+    margin-bottom: 16px; opacity: 0.8;
+  }
+  .video-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 15px 18px; background: var(--dark2);
+    border: 1px solid rgba(255,255,255,0.04);
+    margin-bottom: 2px; transition: border-color 0.2s;
+  }
+  .video-item:hover { border-color: rgba(201,168,76,0.15); }
+  .video-item-title { font-size: 0.88rem; letter-spacing: 0.06em; }
+  .video-item-meta { font-size: 0.7rem; color: var(--text-dim); margin-top: 3px; }
+  .item-btns { display: flex; gap: 8px; }
+
+  /* ── EDITOR ── */
+  .editor-header {
+    display: flex; align-items: center; gap: 16px; margin-bottom: 28px;
+  }
+  .editor-header h2 {
+    font-family: 'Cinzel', serif; font-size: 1rem;
+    letter-spacing: 0.2em; color: var(--text);
+  }
+  .field-group { margin-bottom: 20px; }
+  .field-group label {
+    display: block; font-size: 0.65rem; letter-spacing: 0.35em;
+    text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px;
+  }
+  .field-group input, .field-group textarea {
+    width: 100%; background: var(--dark2);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text); font-family: 'Raleway', sans-serif;
+    font-size: 0.88rem; padding: 11px 14px;
+    outline: none; transition: border-color 0.2s; resize: vertical;
+  }
+  .field-group input:focus, .field-group textarea:focus {
+    border-color: rgba(201,168,76,0.35);
+  }
+  .field-group textarea { min-height: 320px; font-size: 0.85rem; line-height: 1.7; }
+  .field-hint { font-size: 0.68rem; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.05em; }
+  .editor-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+
+  /* ── URL BOX ── */
+  .url-box {
+    background: rgba(201,168,76,0.04);
+    border: 1px solid rgba(201,168,76,0.2);
+    padding: 16px 18px; margin-top: 20px;
+    display: none;
+  }
+  .url-box.visible { display: block; }
+  .url-box-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .url-box p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.08em; }
+  .url-text {
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.8rem; color: var(--gold-light);
+    word-break: break-all; letter-spacing: 0.03em;
+    background: rgba(0,0,0,0.2);
+    padding: 8px 12px;
+    border: 1px solid rgba(201,168,76,0.1);
+    display: block; margin-bottom: 10px;
+    user-select: all;
+  }
+  .url-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    font-family: 'Raleway', sans-serif; font-size: 0.68rem;
+    letter-spacing: 0.28em; text-transform: uppercase;
+    padding: 10px 20px; border: 1px solid;
+    cursor: pointer; transition: all 0.2s; background: transparent;
+    white-space: nowrap;
+  }
+  .btn-gold { border-color: rgba(201,168,76,0.4); color: var(--gold); }
+  .btn-gold:hover { background: rgba(201,168,76,0.08); border-color: var(--gold); }
+  .btn-red { border-color: rgba(200,112,112,0.35); color: var(--red); }
+  .btn-red:hover { background: rgba(200,112,112,0.08); border-color: var(--red); }
+  .btn-dim { border-color: rgba(255,255,255,0.1); color: var(--text-dim); }
+  .btn-dim:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+  .btn-green { border-color: rgba(125,184,125,0.35); color: var(--green); }
+  .btn-green:hover { background: rgba(125,184,125,0.08); border-color: var(--green); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-sm { padding: 7px 14px; font-size: 0.62rem; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    background: var(--dark3); border: 1px solid rgba(201,168,76,0.2);
+    padding: 12px 24px; font-size: 0.75rem; letter-spacing: 0.1em;
+    z-index: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; }
+  #toast.success { border-color: rgba(125,184,125,0.4); color: var(--green); }
+  #toast.error   { border-color: rgba(200,112,112,0.4); color: var(--red); }
+
+  /* ── MISC ── */
+  input[type=number] { -moz-appearance: textfield; }
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .spinner {
+    width: 24px; height: 24px;
+    border: 2px solid rgba(201,168,76,0.15);
+    border-top-color: var(--gold); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 40px auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #editor-loader {
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 14px; padding: 60px 20px; text-align: center;
+  }
+  #editor-loader.visible { display: flex; }
+  #editor-loader p { font-size: 0.75rem; color: var(--text-dim); letter-spacing: 0.2em; text-transform: uppercase; }
+  #editor-loader small { font-size: 0.68rem; color: var(--text-dim); opacity: 0.5; letter-spacing: 0.12em; }
+  #editor-fields { display: none; }
+  #editor-fields.visible { display: block; }
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(201,168,76,0.15), transparent); margin: 32px 0; }
+</style>
+</head>
+<body>
+
+<!-- TITLEBAR -->
+<div id="titlebar">
+  <div class="titlebar-left">
+    <div class="titlebar-icon"></div>
+    <span class="titlebar-name">Crédits Admin</span>
+  </div>
+  <div class="titlebar-controls">
+    <button class="wbtn" onclick="window.electronAPI && window.electronAPI.minimize()" title="Réduire">
+      <svg viewBox="0 0 10 1" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="10" height="1" fill="currentColor"/>
+      </svg>
+    </button>
+    <button class="wbtn" onclick="window.electronAPI && window.electronAPI.maximize()" title="Agrandir">
+      <svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0.5" y="0.5" width="9" height="9" stroke="currentColor"/>
+      </svg>
+    </button>
+    <button class="wbtn close" onclick="window.electronAPI && window.electronAPI.close()" title="Fermer">
+      <svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="0" y1="0" x2="10" y2="10" stroke="currentColor" stroke-width="1.2"/>
+        <line x1="10" y1="0" x2="0" y2="10" stroke="currentColor" stroke-width="1.2"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <h2>ADMINISTRATION</h2>
+  <p id="auth-subtitle">Entrez le mot de passe</p>
+  <div class="auth-box">
+    <div class="field-group">
+      <label id="pwd-label">Mot de passe</label>
+      <input type="password" id="pwd-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')submitAuth()" />
+    </div>
+    <div id="pwd-confirm-wrap" class="field-group" style="display:none">
+      <label>Confirmer le mot de passe</label>
+      <input type="password" id="pwd-confirm" placeholder="••••••••" />
+    </div>
+    <button class="btn btn-gold" style="width:100%" onclick="submitAuth()">Accéder</button>
+    <p id="auth-error" style="color:var(--red);font-size:0.75rem;margin-top:12px;text-align:center;min-height:1em"></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <span class="topbar-title">ADMIN — CRÉDITS</span>
+    <div class="topbar-actions">
+      <button class="btn btn-dim btn-sm" onclick="showView('list')">← Liste</button>
+      <button class="btn btn-dim btn-sm" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- VIEW: LIST -->
+    <div class="view active" id="view-list">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <p class="section-title" style="margin:0">Vidéos configurées</p>
+        <button class="btn btn-gold btn-sm" onclick="showView('create')">+ Nouvelle vidéo</button>
+      </div>
+      <div id="admin-list"><div class="spinner"></div></div>
+    </div>
+
+    <!-- VIEW: EDITOR -->
+    <div class="view" id="view-editor">
+      <div class="editor-header">
+        <div>
+          <h2 id="editor-heading">Modifier la vidéo</h2>
+          <p style="font-size:0.72rem;color:var(--text-dim);margin-top:4px;letter-spacing:0.06em" id="editor-sheetname"></p>
+        </div>
+      </div>
+
+      <div id="editor-loader">
+        <div class="spinner"></div>
+        <p>Chargement des crédits…</p>
+        <small>Synchronisation avec le serveur</small>
+      </div>
+
+      <div id="editor-fields">
+        <div class="field-group">
+          <label>Nom de l'onglet (identifiant URL)</label>
+          <input type="text" id="edit-name" />
+          <p class="field-hint">Utilisé dans l'URL : ?video=<span id="hint-name">…</span></p>
+        </div>
+        <div class="field-group">
+          <label>Durée de défilement (secondes)</label>
+          <input type="number" id="edit-duration" min="5" max="300" />
+        </div>
+        <div class="field-group">
+          <label>Contenu des crédits</label>
+          <textarea id="edit-lines" spellcheck="false"></textarea>
+          <p class="field-hint">Ligne 1 = titre · ## Section = titre doré · Ligne vide = espace</p>
+        </div>
+      </div>
+
+      <div class="editor-actions">
+        <button class="btn btn-gold" id="btn-save" onclick="saveEdit()">Enregistrer</button>
+        <button class="btn btn-dim" onclick="showView('list')">Annuler</button>
+        <button class="btn btn-red btn-sm" style="margin-left:auto" onclick="deleteVideo()">Supprimer</button>
+      </div>
+
+      <div class="url-box" id="edit-url-box">
+        <div class="url-box-header">
+          <p>Lien des crédits générés :</p>
+        </div>
+        <span class="url-text" id="edit-url-text"></span>
+        <div class="url-actions">
+          <button class="btn btn-gold btn-sm" onclick="copyUrl('edit-url-text')">📋 Copier</button>
+          <button class="btn btn-green btn-sm" onclick="openInBrowser('edit-url-text')">🌐 Ouvrir dans le navigateur</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: CREATE -->
+    <div class="view" id="view-create">
+      <div class="editor-header">
+        <h2>Nouvelle vidéo</h2>
+      </div>
+      <div class="field-group">
+        <label>Nom de l'onglet (identifiant URL) *</label>
+        <input type="text" id="create-name" placeholder="ex: ParkourFinal2025" oninput="updateCreateHint()" />
+        <p class="field-hint">Sera utilisé dans : ?video=<span id="create-hint">…</span></p>
+      </div>
+      <div class="field-group">
+        <label>Durée de défilement (secondes)</label>
+        <input type="number" id="create-duration" value="30" min="5" max="300" />
+      </div>
+      <div class="editor-actions">
+        <button class="btn btn-gold" id="btn-create" onclick="createVideo()">Créer</button>
+        <button class="btn btn-dim" onclick="showView('list')">Annuler</button>
+      </div>
+      <div class="url-box" id="create-url-box">
+        <p>Vidéo créée ! Lien des crédits :</p>
+        <span class="url-text" id="create-url-text"></span>
+        <div class="url-actions">
+          <button class="btn btn-gold btn-sm" onclick="copyUrl('create-url-text')">📋 Copier</button>
+          <button class="btn btn-green btn-sm" onclick="openInBrowser('create-url-text')">🌐 Ouvrir dans le navigateur</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybtmHWgoVybTwgsXUWt9sofu67wyPgB8Z8L2rm8UEfzKBhf7lYIJubu87ZS7llO4Uw/exec';
+  const BASE_URL = 'https://nathbu92.github.io/Credits/';
+
+  let sessionPwd   = '';
+  let isFirstLogin  = false;
+  let currentVideo  = null;
+
+  // ── AUTH ────────────────────────────────────────────────────
+  async function initAuth() {
+    try {
+      const res  = await fetch(APPS_SCRIPT_URL + '?action=checkpwd&pwd=');
+      const data = await res.json();
+      if (data.firstLogin) {
+        isFirstLogin = true;
+        document.getElementById('auth-subtitle').textContent = 'Première connexion — définissez un mot de passe';
+        document.getElementById('pwd-label').textContent = 'Nouveau mot de passe';
+        document.getElementById('pwd-confirm-wrap').style.display = 'block';
+      }
+    } catch(e) {
+      // silencieux au démarrage
+    }
+  }
+
+  async function submitAuth() {
+    const pwd   = document.getElementById('pwd-input').value;
+    const errEl = document.getElementById('auth-error');
+    errEl.textContent = '';
+    errEl.style.color = 'var(--text-dim)';
+
+    if (!pwd) { errEl.style.color = 'var(--red)'; errEl.textContent = 'Mot de passe requis.'; return; }
+    errEl.textContent = 'Connexion en cours…';
+
+    if (isFirstLogin) {
+      const confirm = document.getElementById('pwd-confirm').value;
+      if (pwd !== confirm) { errEl.textContent = 'Les mots de passe ne correspondent pas.'; return; }
+      const res  = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'setpwd', newPwd: pwd }) });
+      const data = await res.json();
+      if (!data.ok) { errEl.textContent = data.error; return; }
+    } else {
+      const res  = await fetch(`${APPS_SCRIPT_URL}?action=checkpwd&pwd=${encodeURIComponent(pwd)}`);
+      const data = await res.json();
+      if (!data.ok) { errEl.style.color = 'var(--red)'; errEl.textContent = 'Mot de passe incorrect.'; return; }
+    }
+
+    sessionPwd = pwd;
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadAdminList();
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('auth-error').textContent = '';
+  }
+
+  function logout() {
+    sessionPwd = '';
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('auth-error').textContent = '';
+  }
+
+  // ── VIEWS ───────────────────────────────────────────────────
+  function showView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    if (name === 'list') loadAdminList();
+    if (name === 'create') {
+      document.getElementById('create-url-box').classList.remove('visible');
+      document.getElementById('create-name').value = '';
+      document.getElementById('create-duration').value = 30;
+      document.getElementById('create-hint').textContent = '…';
+    }
+  }
+
+  // ── LIST ────────────────────────────────────────────────────
+  async function loadAdminList() {
+    const list = document.getElementById('admin-list');
+    list.innerHTML = '<div class="spinner"></div><p style="text-align:center;color:var(--text-dim);font-size:0.75rem;margin-top:8px;letter-spacing:0.1em">Connexion au serveur…<br><span style="font-size:0.68rem;opacity:0.6">Cela peut prendre quelques secondes</span></p>';
+    try {
+      const res  = await fetch(APPS_SCRIPT_URL + '?action=list');
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      renderAdminList(data.sheets);
+    } catch(e) {
+      list.innerHTML = `<p style="color:var(--red);font-size:0.8rem">Erreur : ${e.message}</p>`;
+    }
+  }
+
+  function renderAdminList(sheets) {
+    const list = document.getElementById('admin-list');
+    list.innerHTML = '';
+    if (sheets.length === 0) {
+      list.innerHTML = '<p style="color:var(--text-dim);font-size:0.8rem;padding:20px 0">Aucune vidéo. Créez-en une.</p>';
+      return;
+    }
+    sheets.forEach(s => {
+      const url = BASE_URL + '?video=' + encodeURIComponent(s.name);
+      const div = document.createElement('div');
+      div.className = 'video-item';
+      div.innerHTML = `
+        <div>
+          <div class="video-item-title">${escHtml(s.title || s.name)}</div>
+          <div class="video-item-meta">${escHtml(s.name)} · ${s.duration}s · ${s.lines} lignes</div>
+        </div>
+        <div class="item-btns">
+          <button class="btn btn-green btn-sm" data-url="${esc2(url)}" title="Ouvrir dans le navigateur">🌐</button>
+          <button class="btn btn-dim btn-sm" data-name="${esc2(s.name)}">Modifier</button>
+        </div>
+      `;
+      list.appendChild(div);
+    });
+    list.querySelectorAll('[data-name]').forEach(btn => {
+      btn.addEventListener('click', () => openEditor(btn.getAttribute('data-name')));
+    });
+    list.querySelectorAll('[data-url]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const u = btn.getAttribute('data-url');
+        if (window.electronAPI) {
+          // Electron : ouvrir dans le navigateur système via shell.openExternal (géré dans main.js)
+          window.open(u, '_blank');
+        } else {
+          window.open(u, '_blank');
+        }
+      });
+    });
+  }
+
+  // ── EDITOR ──────────────────────────────────────────────────
+  async function openEditor(name) {
+    currentVideo = name;
+    document.getElementById('editor-heading').textContent = 'Modifier : ' + name;
+    document.getElementById('editor-sheetname').textContent = 'Onglet : ' + name;
+    document.getElementById('edit-name').value = name;
+    document.getElementById('editor-loader').classList.add('visible');
+    document.getElementById('editor-fields').classList.remove('visible');
+    document.getElementById('edit-url-box').classList.remove('visible');
+    document.getElementById('edit-name').oninput = () => {
+      document.getElementById('hint-name').textContent = document.getElementById('edit-name').value || '…';
+    };
+    document.getElementById('hint-name').textContent = name;
+    showView('editor');
+
+    const res  = await fetch(`${APPS_SCRIPT_URL}?action=get&video=${encodeURIComponent(name)}`);
+    const data = await res.json();
+    if (!data.ok) { toast('Erreur : ' + data.error, 'error'); return; }
+
+    document.getElementById('edit-duration').value = data.duration;
+    document.getElementById('edit-lines').value    = data.lines.join('\n');
+
+    const url = BASE_URL + '?video=' + encodeURIComponent(name);
+    document.getElementById('edit-url-text').textContent = url;
+    document.getElementById('edit-url-box').classList.add('visible');
+
+    document.getElementById('editor-loader').classList.remove('visible');
+    document.getElementById('editor-fields').classList.add('visible');
+  }
+
+  async function saveEdit() {
+    const btn      = document.getElementById('btn-save');
+    const newName  = document.getElementById('edit-name').value.trim();
+    const duration = parseInt(document.getElementById('edit-duration').value);
+    const lines    = document.getElementById('edit-lines').value.split('\n');
+
+    if (!newName) { toast('Le nom ne peut pas être vide.', 'error'); return; }
+    btn.disabled = true; btn.textContent = 'Enregistrement…';
+
+    try {
+      const res  = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'update', pwd: sessionPwd, video: currentVideo, newName, duration, lines })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+
+      currentVideo = newName;
+      document.getElementById('editor-heading').textContent = 'Modifier : ' + newName;
+      document.getElementById('editor-sheetname').textContent = 'Onglet : ' + newName;
+      document.getElementById('hint-name').textContent = newName;
+
+      const url = BASE_URL + '?video=' + encodeURIComponent(newName);
+      document.getElementById('edit-url-text').textContent = url;
+
+      toast('Enregistré ✓', 'success');
+    } catch(e) {
+      toast('Erreur : ' + e.message, 'error');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Enregistrer';
+    }
+  }
+
+  async function deleteVideo() {
+    if (!confirm(`Supprimer définitivement l'onglet "${currentVideo}" ?`)) return;
+    try {
+      const res  = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'delete', pwd: sessionPwd, video: currentVideo })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      toast('Supprimé.', 'success');
+      showView('list');
+    } catch(e) {
+      toast('Erreur : ' + e.message, 'error');
+    }
+  }
+
+  // ── CREATE ──────────────────────────────────────────────────
+  function updateCreateHint() {
+    const v = document.getElementById('create-name').value;
+    document.getElementById('create-hint').textContent = v || '…';
+  }
+
+  async function createVideo() {
+    const btn      = document.getElementById('btn-create');
+    const name     = document.getElementById('create-name').value.trim();
+    const duration = parseInt(document.getElementById('create-duration').value);
+
+    if (!name) { toast('Le nom est requis.', 'error'); return; }
+    btn.disabled = true; btn.textContent = 'Création…';
+
+    try {
+      const res  = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'create', pwd: sessionPwd, name, duration })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+
+      const url = BASE_URL + '?video=' + encodeURIComponent(name);
+      document.getElementById('create-url-text').textContent = url;
+      document.getElementById('create-url-box').classList.add('visible');
+
+      toast('Vidéo créée ✓', 'success');
+      setTimeout(() => openEditor(name), 800);
+    } catch(e) {
+      toast('Erreur : ' + e.message, 'error');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Créer';
+    }
+  }
+
+  // ── URL HELPERS ─────────────────────────────────────────────
+  function copyUrl(elId) {
+    const url = document.getElementById(elId).textContent.trim();
+    navigator.clipboard.writeText(url).then(() => {
+      toast('Lien copié ✓', 'success');
+    }).catch(() => {
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = url;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      toast('Lien copié ✓', 'success');
+    });
+  }
+
+  function openInBrowser(elId) {
+    const url = document.getElementById(elId).textContent.trim();
+    window.open(url, '_blank');
+  }
+
+  // ── UTILS ───────────────────────────────────────────────────
+  function toast(msg, type = 'success') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'show ' + type;
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.className = '', 3000);
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function esc2(str) {
+    return String(str).replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  initAuth();
+</script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chargement…</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Raleway:wght@200;300;400&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 480px; height: 300px;
+    background: transparent;
+    overflow: hidden;
+    -webkit-app-region: drag;
+    user-select: none;
+  }
+
+  .shell {
+    width: 480px; height: 300px;
+    background: #0a0a0f;
+    border: 1px solid rgba(201,168,76,0.25);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    overflow: hidden;
+    border-radius: 2px;
+    box-shadow:
+      0 0 0 1px rgba(201,168,76,0.06),
+      0 30px 80px rgba(0,0,0,0.9),
+      0 0 120px rgba(201,168,76,0.04) inset;
+  }
+
+  /* Coin ornements */
+  .corner {
+    position: absolute;
+    width: 20px; height: 20px;
+    opacity: 0.4;
+  }
+  .corner::before, .corner::after {
+    content: '';
+    position: absolute;
+    background: #c9a84c;
+  }
+  .corner::before { width: 1px; height: 100%; }
+  .corner::after  { width: 100%; height: 1px; }
+  .corner.tl { top: 10px; left: 10px; }
+  .corner.tr { top: 10px; right: 10px; transform: scaleX(-1); }
+  .corner.bl { bottom: 10px; left: 10px; transform: scaleY(-1); }
+  .corner.br { bottom: 10px; right: 10px; transform: scale(-1); }
+
+  /* Ligne dorée haut */
+  .top-bar {
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent 0%, #c9a84c 40%, #e8d08a 50%, #c9a84c 60%, transparent 100%);
+    animation: shimmer 2.5s ease-in-out infinite;
+  }
+  @keyframes shimmer {
+    0%,100% { opacity: 0.6; }
+    50%      { opacity: 1; }
+  }
+
+  /* Bruit de fond */
+  .noise {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    opacity: 0.25;
+  }
+
+  /* Halo central */
+  .glow {
+    position: absolute;
+    width: 300px; height: 160px;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(ellipse, rgba(201,168,76,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    animation: pulse 3s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 0.5; transform: translate(-50%,-50%) scale(1); }
+    50%      { opacity: 1;   transform: translate(-50%,-50%) scale(1.1); }
+  }
+
+  /* Contenu */
+  .content {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    animation: fadeInUp 0.8s ease forwards;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .eyebrow {
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.52rem; font-weight: 300;
+    letter-spacing: 0.55em; color: rgba(201,168,76,0.6);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .logo-text {
+    font-family: 'Cinzel', serif;
+    font-size: 1.7rem; font-weight: 300;
+    letter-spacing: 0.35em;
+    color: #e8e0d0;
+    text-shadow: 0 0 40px rgba(201,168,76,0.3);
+  }
+
+  .logo-text span { color: #c9a84c; }
+
+  .sep {
+    width: 60px; height: 1px; margin: 14px 0 12px;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,0.5), transparent);
+  }
+
+  .sub {
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.58rem; font-weight: 300;
+    letter-spacing: 0.4em; color: rgba(232,224,208,0.35);
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  /* Barre de progression */
+  .progress-wrap {
+    width: 200px; height: 1px;
+    background: rgba(255,255,255,0.06);
+    position: relative; overflow: hidden;
+  }
+  .progress-bar {
+    position: absolute; top: 0; left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, #c9a84c, #e8d08a);
+    animation: load 2.4s cubic-bezier(0.4,0,0.2,1) forwards;
+  }
+  @keyframes load {
+    0%   { width: 0%; }
+    30%  { width: 35%; }
+    60%  { width: 65%; }
+    85%  { width: 88%; }
+    100% { width: 100%; }
+  }
+
+  .progress-label {
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.5rem; letter-spacing: 0.35em;
+    color: rgba(201,168,76,0.35); text-transform: uppercase;
+    margin-top: 12px;
+    animation: blink 1.4s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%,100% { opacity: 0.35; }
+    50%      { opacity: 0.7; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top-bar"></div>
+  <div class="noise"></div>
+  <div class="glow"></div>
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <div class="content">
+    <p class="eyebrow">Administration</p>
+    <p class="logo-text">CRÉD<span>I</span>TS</p>
+    <div class="sep"></div>
+    <p class="sub">Chargement de l'interface</p>
+    <div class="progress-wrap">
+      <div class="progress-bar"></div>
+    </div>
+    <p class="progress-label" id="lbl">Initialisation…</p>
+  </div>
+</div>
+
+<script>
+  const messages = [
+    'Initialisation…',
+    'Connexion aux services…',
+    'Chargement de l\'interface…',
+    'Prêt',
+  ];
+  let i = 0;
+  const lbl = document.getElementById('lbl');
+  const interval = setInterval(() => {
+    i++;
+    if (i < messages.length) lbl.textContent = messages[i];
+    else clearInterval(interval);
+  }, 700);
+</script>
+</body>
+</html>

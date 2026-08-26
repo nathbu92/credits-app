@@ -1,0 +1,8 @@
+Placer ici vos fichiers assets :
+
+- icon.ico         (icône de l'application, format ICO multi-résolution)
+- icon.png         (256×256 px, PNG, pour le runtime Electron)
+- installer-sidebar.bmp  (164×314 px, BMP 24bit, panneau installateur gauche)
+- installer-header.bmp   (150×57 px, BMP 24bit, en-tête installateur)
+
+Ces fichiers ne sont pas inclus dans le projet — placez les vôtres ici avant de lancer "npm run build".
