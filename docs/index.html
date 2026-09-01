@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crédits Vidéos</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500&display=swap');
+
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8d08a;
+    --dark: #0a0a0f;
+    --dark2: #11111a;
+    --dark3: #18181f;
+    --text: #e8e0d0;
+    --text-dim: #8a8070;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--dark); color: var(--text); font-family: 'Raleway', sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+  body::after {
+    content: ''; position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.75) 100%);
+    pointer-events: none; z-index: 0;
+  }
+
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 999; opacity: 0.35;
+  }
+
+  .z { position: relative; z-index: 1; }
+
+  /* ══ LIST VIEW ══ */
+  #view-list { min-height: 100vh; }
+
+  .list-page { max-width: 720px; margin: 0 auto; padding: 60px 24px 100px; }
+
+  .list-header { text-align: center; margin-bottom: 44px; }
+  .list-header::after {
+    content: ''; display: block; width: 60px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 20px auto 0;
+  }
+  .eyebrow { font-size: 0.62rem; letter-spacing: 0.5em; color: var(--gold); text-transform: uppercase; margin-bottom: 10px; opacity: 0.8; }
+  .list-header h1 { font-family: 'Cinzel', serif; font-size: clamp(1.4rem, 4vw, 2.2rem); font-weight: 400; letter-spacing: 0.15em; }
+
+  .search-wrap { position: relative; margin-bottom: 28px; }
+  #search {
+    width: 100%; background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.15); color: var(--text);
+    font-family: 'Raleway', sans-serif; font-size: 0.88rem; letter-spacing: 0.05em;
+    padding: 13px 44px 13px 18px; outline: none; transition: border-color 0.2s;
+  }
+  #search:focus { border-color: rgba(201,168,76,0.35); }
+  #search::placeholder { color: var(--text-dim); }
+  .search-icon { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text-dim); pointer-events: none; }
+
+  #video-list { display: flex; flex-direction: column; gap: 2px; }
+  .video-card {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 22px; background: var(--dark2);
+    border: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer; transition: all 0.2s ease;
+  }
+  .video-card:hover { background: var(--dark3); border-color: rgba(201,168,76,0.2); }
+  .card-title { font-family: 'Cinzel', serif; font-size: 0.9rem; letter-spacing: 0.12em; }
+  .card-meta { font-size: 0.7rem; color: var(--text-dim); margin-top: 4px; }
+  .card-arrow { color: var(--gold); opacity: 0.5; transition: opacity 0.2s, transform 0.2s; }
+  .video-card:hover .card-arrow { opacity: 1; transform: translateX(4px); }
+
+  .state-msg { text-align: center; padding: 50px 20px; color: var(--text-dim); font-size: 0.8rem; letter-spacing: 0.1em; line-height: 2; }
+
+  /* ══ CREDITS VIEW ══ */
+  #view-credits { display: none; min-height: 100vh; }
+
+  /* Back button */
+  #btn-back {
+    position: fixed; top: 20px; left: 20px; z-index: 50;
+    font-family: 'Raleway', sans-serif; font-size: 0.65rem;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    padding: 8px 18px; border: 1px solid rgba(255,255,255,0.12);
+    color: var(--text-dim); cursor: pointer; background: rgba(10,10,15,0.8);
+    transition: all 0.2s;
+  }
+  #btn-back:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
+
+  /* Loading overlay */
+  #credits-loading {
+    position: fixed; inset: 0; z-index: 100; background: var(--dark);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+  }
+  #credits-loading p { font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.3em; color: var(--text-dim); text-transform: uppercase; }
+  #credits-loading small { font-size: 0.65rem; color: var(--text-dim); opacity: 0.5; letter-spacing: 0.15em; }
+
+  .spinner { width: 32px; height: 32px; border: 2px solid rgba(201,168,76,0.15); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Credits content */
+  #credits-content { display: none; }
+
+  header { text-align: center; padding: 60px 20px 30px; }
+  header::after { content: ''; display: block; width: 80px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 24px auto 0; }
+  .header-eyebrow { font-size: 0.65rem; letter-spacing: 0.5em; color: var(--gold); text-transform: uppercase; margin-bottom: 12px; opacity: 0.8; }
+  .header-title { font-family: 'Cinzel', serif; font-size: clamp(1.6rem, 4vw, 2.8rem); font-weight: 400; letter-spacing: 0.15em; text-shadow: 0 0 40px rgba(201,168,76,0.2); }
+
+  #credits-wrapper {
+    position: relative; width: 100%; max-width: 680px; margin: 0 auto; overflow: hidden; height: 70vh;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
+  }
+  #credits-track { text-align: center; padding: 80px 20px; animation: scrollUp 30s linear forwards; }
+  #credits-track.paused { animation-play-state: paused; }
+  @keyframes scrollUp { from { transform: translateY(100vh); } to { transform: translateY(-100%); } }
+
+  .credit-line { font-weight: 300; font-size: clamp(0.95rem, 2.2vw, 1.15rem); letter-spacing: 0.08em; color: var(--text); line-height: 1.9; }
+  .credit-line.section-title { font-family: 'Cinzel', serif; font-size: clamp(0.72rem, 1.5vw, 0.88rem); letter-spacing: 0.4em; color: var(--gold); text-transform: uppercase; margin: 32px 0 8px; opacity: 0.85; }
+  .credit-line.empty { display: block; height: 1.5em; }
+  .credit-divider { display: block; width: 40px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-light), transparent); margin: 20px auto; opacity: 0.4; }
+
+  /* Controls */
+  #controls { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 50; display: flex; gap: 12px; }
+  .btn { font-family: 'Raleway', sans-serif; font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; padding: 10px 22px; border: 1px solid; cursor: pointer; transition: all 0.25s; background: transparent; }
+  .btn-pause { border-color: rgba(201,168,76,0.35); color: var(--gold); }
+  .btn-pause:hover { background: rgba(201,168,76,0.08); border-color: var(--gold); }
+  .btn-report { border-color: rgba(180,60,60,0.35); color: #c87070; }
+  .btn-report:hover { background: rgba(180,60,60,0.08); border-color: #c87070; }
+
+  /* End screen */
+  #end-screen { display: none; position: fixed; inset: 0; z-index: 150; background: rgba(10,10,15,0.92); backdrop-filter: blur(6px); flex-direction: column; align-items: center; justify-content: center; gap: 24px; text-align: center; }
+  #end-screen.visible { display: flex; animation: fadeIn 1.2s ease forwards; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  #end-screen h2 { font-family: 'Cinzel', serif; font-size: clamp(1rem, 2.5vw, 1.4rem); letter-spacing: 0.3em; color: var(--gold); font-weight: 400; }
+  #end-screen p { font-size: 0.8rem; color: var(--text-dim); letter-spacing: 0.15em; }
+  .btn-end { font-family: 'Raleway', sans-serif; font-size: 0.72rem; letter-spacing: 0.35em; text-transform: uppercase; padding: 12px 28px; border: 1px solid; cursor: pointer; background: transparent; transition: all 0.25s; margin: 4px; }
+  .btn-replay { border-color: rgba(201,168,76,0.5); color: var(--gold); }
+  .btn-replay:hover { background: rgba(201,168,76,0.1); border-color: var(--gold); }
+  .btn-back-list { border-color: rgba(255,255,255,0.12); color: var(--text-dim); }
+  .btn-back-list:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
+
+  /* Modal */
+  #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+  #modal-overlay.open { display: flex; }
+  #modal { background: var(--dark2); border: 1px solid rgba(201,168,76,0.2); padding: 40px; max-width: 480px; width: 90%; position: relative; }
+  #modal::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+  #modal h2 { font-family: 'Cinzel', serif; font-size: 1rem; letter-spacing: 0.25em; color: var(--gold); margin-bottom: 6px; }
+  #modal p.sub { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 28px; }
+  #modal label { display: block; font-size: 0.68rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
+  #modal textarea, #modal input { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: var(--text); font-family: 'Raleway', sans-serif; font-size: 0.9rem; padding: 12px 14px; outline: none; transition: border-color 0.2s; resize: none; margin-bottom: 20px; }
+  #modal textarea:focus, #modal input:focus { border-color: rgba(201,168,76,0.4); }
+  #modal textarea { height: 110px; }
+  .modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
+  .btn-send { border-color: rgba(201,168,76,0.5); color: var(--gold); }
+  .btn-send:hover { background: rgba(201,168,76,0.1); border-color: var(--gold); }
+  .btn-send:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-cancel { border-color: rgba(255,255,255,0.1); color: var(--text-dim); }
+  .btn-cancel:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+  #modal-status { font-size: 0.75rem; letter-spacing: 0.1em; margin-top: 14px; min-height: 1.2em; text-align: center; }
+  #modal-status.success { color: #7db87d; }
+  #modal-status.error { color: #c87070; }
+</style>
+</head>
+<body>
+
+<!-- ══ LIST VIEW ══ -->
+<div id="view-list" class="z">
+  <div class="list-page">
+    <div class="list-header">
+      <p class="eyebrow">Webradio Les Martinets</p>
+      <h1>CRÉDITS VIDÉOS</h1>
+    </div>
+    <div class="search-wrap">
+      <input type="text" id="search" placeholder="Rechercher une vidéo…" oninput="filterList()" />
+      <span class="search-icon">⌕</span>
+    </div>
+    <div id="video-list">
+      <div class="state-msg" id="list-loading">
+        <div class="spinner" style="margin:0 auto 12px"></div>
+        Connexion au serveur…<br>
+        <small style="opacity:0.6;font-size:0.72rem">Cela peut prendre quelques secondes</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CREDITS VIEW ══ -->
+<div id="view-credits">
+
+  <button id="btn-back" onclick="backToList()">← Retour</button>
+
+  <!-- Loading -->
+  <div id="credits-loading">
+    <div class="spinner"></div>
+    <p>Connexion au serveur…</p>
+    <small>Cela peut prendre quelques secondes</small>
+  </div>
+
+  <!-- Content -->
+  <div id="credits-content" class="z">
+    <header>
+      <p class="header-eyebrow">Production</p>
+      <h1 class="header-title" id="video-title">CRÉDITS</h1>
+    </header>
+    <div id="credits-wrapper">
+      <div id="credits-track"></div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div id="controls">
+    <button class="btn btn-pause" id="btn-pause" onclick="togglePause()">⏸ Pause</button>
+    <button class="btn btn-report" onclick="openModal()">⚠ Signaler</button>
+  </div>
+
+  <!-- End screen -->
+  <div id="end-screen">
+    <h2>FIN DES CRÉDITS</h2>
+    <p>Tous les crédits ont défilé.</p>
+    <div>
+      <button class="btn-end btn-replay" onclick="replayCredits()">↺ Revoir</button>
+      <button class="btn-end btn-back-list" onclick="backToList()">← Liste des vidéos</button>
+    </div>
+  </div>
+
+  <!-- Modal signalement -->
+  <div id="modal-overlay">
+    <div id="modal">
+      <h2>SIGNALER UN PROBLÈME</h2>
+      <p class="sub">Un crédit manquant ou incorrect ?</p>
+      <label>Ton nom (optionnel)</label>
+      <input type="text" id="reporter-name" placeholder="ex: Jean Dupont" />
+      <label>Description *</label>
+      <textarea id="report-message" placeholder="ex: Le nom du caméraman est manquant…"></textarea>
+      <div class="modal-actions">
+        <button class="btn btn-cancel" onclick="closeModal()">Annuler</button>
+        <button class="btn btn-send" id="btn-send" onclick="sendReport()">Envoyer</button>
+      </div>
+      <p id="modal-status"></p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ══════════════════════════════════════════════
+  //  ⚙️  CONFIG — mets tes URLs ici
+  // ══════════════════════════════════════════════
+  const CONFIG = {
+    APPS_SCRIPT_URL:     'https://script.google.com/macros/s/AKfycbybtmHWgoVybTwgsXUWt9sofu67wyPgB8Z8L2rm8UEfzKBhf7lYIJubu87ZS7llO4Uw/exec',
+    EMAILJS_PUBLIC_KEY:  'NxGFGvdon1YudMbyy',
+    EMAILJS_SERVICE_ID:  'service_w8dgapk',
+    EMAILJS_TEMPLATE_ID: 'template_t968ifo',
+    TO_EMAIL:            'webradiolesmartinets@gmail.com',
+  };
+  // ══════════════════════════════════════════════
+
+  emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
+
+  let allSheets   = [];
+  let isPaused    = false;
+  let currentSheet = null;
+
+  // ══ LIST ══
+  async function loadList() {
+    try {
+      const res  = await fetch(CONFIG.APPS_SCRIPT_URL + '?action=list');
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      allSheets = data.sheets;
+      renderList(allSheets);
+    } catch(e) {
+      document.getElementById('list-loading').innerHTML =
+        'Erreur de chargement : ' + e.message;
+    }
+  }
+
+  function renderList(sheets) {
+    const list = document.getElementById('video-list');
+    list.innerHTML = '';
+    if (sheets.length === 0) {
+      list.innerHTML = '<p class="state-msg">Aucune vidéo configurée.</p>';
+      return;
+    }
+    sheets.forEach(s => {
+      const div = document.createElement('div');
+      div.className = 'video-card';
+      div.innerHTML = `
+        <div>
+          <div class="card-title">${esc(s.title || s.name)}</div>
+          <div class="card-meta">${esc(s.name)}</div>
+        </div>
+        <span class="card-arrow">→</span>
+      `;
+      div.onclick = () => openCredits(s.name);
+      list.appendChild(div);
+    });
+  }
+
+  function filterList() {
+    const q = document.getElementById('search').value.trim().toLowerCase();
+    const filtered = q
+      ? allSheets.filter(s => s.name.toLowerCase().includes(q) || (s.title||'').toLowerCase().includes(q))
+      : allSheets;
+    renderList(filtered);
+  }
+
+  // ══ NAVIGATION ══
+  function openCredits(name) {
+    currentSheet = name;
+    isPaused = false;
+    document.getElementById('view-list').style.display    = 'none';
+    document.getElementById('view-credits').style.display = 'block';
+    document.getElementById('credits-loading').style.display  = 'flex';
+    document.getElementById('credits-content').style.display  = 'none';
+    document.getElementById('controls').style.display         = 'flex';
+    document.getElementById('end-screen').classList.remove('visible');
+    document.getElementById('btn-pause').textContent = '⏸ Pause';
+    loadCredits(name);
+  }
+
+  function backToList() {
+    document.getElementById('view-credits').style.display = 'none';
+    document.getElementById('view-list').style.display    = 'block';
+    // Stop animation
+    const track = document.getElementById('credits-track');
+    track.style.animation = 'none';
+    document.getElementById('end-screen').classList.remove('visible');
+    closeModal();
+  }
+
+  // ══ CREDITS ══
+  async function loadCredits(sheet) {
+    const url = `${CONFIG.APPS_SCRIPT_URL}?action=get&video=${encodeURIComponent(sheet)}`;
+    try {
+      const res  = await fetch(url);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      renderCredits(data.lines, data.duration);
+    } catch(e) {
+      document.getElementById('credits-loading').innerHTML =
+        `<p style="color:#c87070;font-size:0.85rem;text-align:center;padding:20px">Impossible de charger.<br>${e.message}</p>`;
+    }
+  }
+
+  function renderCredits(lines, sheetDuration) {
+    const track = document.getElementById('credits-track');
+    track.innerHTML = '';
+    let titleSet = false;
+
+    lines.forEach(line => {
+      if (!titleSet && line.trim() !== '') {
+        document.getElementById('video-title').textContent = line.trim().toUpperCase();
+        titleSet = true;
+        return;
+      }
+      if (line.trim() === '') {
+        const el = document.createElement('span');
+        el.className = 'credit-line empty';
+        track.appendChild(el);
+        return;
+      }
+      if (line.startsWith('##')) {
+        track.appendChild(Object.assign(document.createElement('span'), { className: 'credit-divider' }));
+        const el = document.createElement('p');
+        el.className = 'credit-line section-title';
+        el.textContent = line.replace(/^##\s*/, '');
+        track.appendChild(el);
+        return;
+      }
+      const el = document.createElement('p');
+      el.className = 'credit-line';
+      el.textContent = line;
+      track.appendChild(el);
+    });
+
+    const duration = sheetDuration || 30;
+    track._duration = duration;
+    track.style.animation = 'none';
+    track.offsetHeight;
+    track.style.animation = '';
+    track.style.animationDuration = duration + 's';
+    attachEndListener(track);
+
+    document.getElementById('credits-loading').style.display = 'none';
+    document.getElementById('credits-content').style.display = 'block';
+  }
+
+  function attachEndListener(track) {
+    track.addEventListener('animationend', () => {
+      document.getElementById('end-screen').classList.add('visible');
+      document.getElementById('controls').style.display = 'none';
+    }, { once: true });
+  }
+
+  function togglePause() {
+    const track = document.getElementById('credits-track');
+    const btn   = document.getElementById('btn-pause');
+    isPaused = !isPaused;
+    track.classList.toggle('paused', isPaused);
+    btn.textContent = isPaused ? '▶ Reprendre' : '⏸ Pause';
+  }
+
+  function replayCredits() {
+    const track = document.getElementById('credits-track');
+    document.getElementById('end-screen').classList.remove('visible');
+    document.getElementById('controls').style.display = 'flex';
+    isPaused = false;
+    document.getElementById('btn-pause').textContent = '⏸ Pause';
+    track.classList.remove('paused');
+    track.style.animation = 'none';
+    track.offsetHeight;
+    track.style.animation = '';
+    track.style.animationDuration = (track._duration || 30) + 's';
+    attachEndListener(track);
+  }
+
+  // ══ MODAL ══
+  function openModal() {
+    document.getElementById('credits-track').classList.add('paused');
+    document.getElementById('modal-overlay').classList.add('open');
+    document.getElementById('modal-status').textContent = '';
+    document.getElementById('modal-status').className = '';
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('open');
+    document.getElementById('report-message').value = '';
+    document.getElementById('reporter-name').value  = '';
+    if (!isPaused) document.getElementById('credits-track').classList.remove('paused');
+  }
+
+  async function sendReport() {
+    const msg = document.getElementById('report-message').value.trim();
+    if (!msg) {
+      const s = document.getElementById('modal-status');
+      s.textContent = 'Décris le problème avant d\'envoyer.';
+      s.className = 'error';
+      return;
+    }
+    const btn = document.getElementById('btn-send');
+    btn.disabled = true; btn.textContent = 'Envoi…';
+    try {
+      await emailjs.send(CONFIG.EMAILJS_SERVICE_ID, CONFIG.EMAILJS_TEMPLATE_ID, {
+        to_email:    CONFIG.TO_EMAIL,
+        from_name:   document.getElementById('reporter-name').value.trim() || 'Anonyme',
+        video_title: document.getElementById('video-title').textContent,
+        sheet_name:  currentSheet,
+        message:     msg,
+      });
+      const s = document.getElementById('modal-status');
+      s.textContent = 'Signalement envoyé. Merci.';
+      s.className = 'success';
+      setTimeout(closeModal, 2000);
+    } catch(e) {
+      const s = document.getElementById('modal-status');
+      s.textContent = 'Erreur : ' + (e.text || e.status || JSON.stringify(e));
+      s.className = 'error';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Envoyer';
+    }
+  }
+
+  function esc(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // Si ?video= dans l'URL, ouvrir directement le lecteur
+  const urlParams  = new URLSearchParams(window.location.search);
+  const directVideo = urlParams.get('video');
+
+  if (directVideo) {
+    loadList(); // charge en arrière-plan pour le retour
+    openCredits(directVideo);
+  } else {
+    loadList();
+  }
+</script>
+</body>
+</html>
