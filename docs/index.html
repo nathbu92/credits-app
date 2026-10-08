@@ -154,9 +154,130 @@
   #modal-status { font-size: 0.75rem; letter-spacing: 0.1em; margin-top: 14px; min-height: 1.2em; text-align: center; }
   #modal-status.success { color: #7db87d; }
   #modal-status.error { color: #c87070; }
+
+  /* ── BOOT ── */
+  #boot {
+    position: fixed; inset: 0; z-index: 900;
+    background: var(--dark);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 22px;
+    text-align: center; padding: 32px;
+  }
+  #boot.hidden { display: none; }
+  .boot-logo {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; color: var(--dark);
+    box-shadow: 0 8px 40px rgba(201,168,76,0.25);
+    animation: bootPulse 2s ease-in-out infinite;
+  }
+  @keyframes bootPulse {
+    0%,100% { transform: scale(1); box-shadow: 0 8px 40px rgba(201,168,76,0.25); }
+    50%     { transform: scale(1.05); box-shadow: 0 14px 52px rgba(201,168,76,0.4); }
+  }
+  .boot-title {
+    font-family: 'Cinzel', serif; font-size: 1.5rem;
+    letter-spacing: 0.35em; color: var(--text);
+    text-shadow: 0 0 40px rgba(201,168,76,0.3);
+  }
+  .boot-spinner {
+    width: 44px; height: 44px;
+    border: 2px solid rgba(201,168,76,0.15);
+    border-top-color: var(--gold); border-bottom-color: var(--gold-light);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  .boot-status {
+    font-family: 'Raleway', sans-serif; font-size: 0.72rem;
+    letter-spacing: 0.2em; color: var(--text-dim);
+    text-transform: uppercase;
+    animation: bootBlink 1.6s ease-in-out infinite;
+  }
+  @keyframes bootBlink { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+  /* ── SERVER STATE ── */
+  #serverState {
+    display: none;
+    position: fixed; inset: 0; z-index: 950;
+    background: var(--dark);
+    align-items: center; justify-content: center;
+    padding: 32px;
+  }
+  #serverState.visible { display: flex; }
+  .ss-card {
+    width: 100%; max-width: 560px;
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.2);
+    padding: 40px 32px;
+    text-align: center;
+    position: relative;
+  }
+  .ss-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .ss-icon { font-size: 52px; margin-bottom: 18px; }
+  .ss-title {
+    font-family: 'Cinzel', serif; font-size: 1.4rem;
+    letter-spacing: 0.15em; color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .ss-sub {
+    font-size: 0.85rem; color: var(--text-dim);
+    line-height: 1.7; margin-bottom: 22px;
+  }
+  .ss-sub b { color: var(--text); }
+  .ss-hours {
+    display: inline-block; padding: 8px 14px;
+    border: 1px solid rgba(201,168,76,0.2);
+    background: rgba(201,168,76,0.04);
+    font-size: 0.72rem; letter-spacing: 0.15em;
+    color: var(--gold-light); margin-bottom: 24px;
+  }
+  .ss-contact {
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 20px; font-size: 0.72rem; color: var(--text-dim);
+    line-height: 1.7;
+  }
+  .ss-contact a { color: var(--gold); text-decoration: none; }
+  .ss-contact a:hover { text-decoration: underline; }
+  .ss-retry {
+    margin-top: 16px;
+    font-family: 'Raleway', sans-serif; font-size: 0.68rem;
+    letter-spacing: 0.28em; text-transform: uppercase;
+    padding: 10px 22px;
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold);
+    background: transparent; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .ss-retry:hover { background: rgba(201,168,76,0.08); border-color: var(--gold); }
 </style>
 </head>
 <body>
+
+<div id="boot">
+  <div class="boot-logo">📋</div>
+  <div class="boot-title">CRÉDITS VIDÉOS</div>
+  <div class="boot-spinner"></div>
+  <div class="boot-status" id="bootStatus">Vérification du serveur…</div>
+</div>
+
+<div id="serverState">
+  <div class="ss-card">
+    <div class="ss-icon" id="ssIcon">🌙</div>
+    <div class="ss-title" id="ssTitle">Serveur momentanément indisponible</div>
+    <p class="ss-sub" id="ssText"></p>
+    <div class="ss-hours">Paris · 07:00 → 22:00</div>
+    <div class="ss-contact">
+      Un problème persiste ? Contactez l’administrateur :<br>
+      <a href="mailto:nathanael.bubbe@gmail.com">nathanael.bubbe@gmail.com</a>
+      <div><button class="ss-retry" onclick="bootCheck()">↻ Réessayer</button></div>
+    </div>
+  </div>
+</div>
 
 <div id="view-list" class="z">
   <div class="list-page">
@@ -231,23 +352,65 @@
 </div>
 
 <script>
-  // ══════════════════════════════════════════════
-  //  ⚙️  CONFIG
-  // ══════════════════════════════════════════════
   const CONFIG = {
     API_BASE:            'https://nath.tailffd3b0.ts.net/credits/api',
     EMAILJS_PUBLIC_KEY:  'NxGFGvdon1YudMbyy',
     EMAILJS_SERVICE_ID:  'service_w8dgapk',
     EMAILJS_TEMPLATE_ID: 'template_t968ifo',
-    TO_EMAIL:            'webradiolesmartinets@gmail.com',   // ← corrigé (avec "et")
+    TO_EMAIL:            'webradiolesmartinets@gmail.com',
   };
-  // ══════════════════════════════════════════════
 
   emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
 
   let allSheets   = [];
   let isPaused    = false;
   let currentSheet = null;
+
+  function parisHour() {
+    const s = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', hour12: false }).format(new Date());
+    return Number(s);
+  }
+  function serverClosed() {
+    const h = parisHour();
+    return h >= 22 || h < 7;
+  }
+  function showServerState() {
+    document.getElementById('boot').classList.add('hidden');
+    const closed = serverClosed();
+    document.getElementById('ssIcon').textContent  = closed ? '🌙' : '⚠️';
+    document.getElementById('ssTitle').textContent = closed ? 'Serveur inactif' : 'Erreur du serveur';
+    document.getElementById('ssText').innerHTML = closed
+      ? 'Le serveur est actuellement inactif pendant la plage de maintenance nocturne.<br><b>Il sera de nouveau disponible à partir de 07:00 (heure de Paris).</b>'
+      : 'Le serveur ne répond pas actuellement.<br><b>Merci de réessayer dans quelques instants.</b> Si le problème continue, signalez-le à l’administrateur.';
+    document.getElementById('serverState').classList.add('visible');
+  }
+  function hideServerState() {
+    document.getElementById('serverState').classList.remove('visible');
+  }
+  async function pingServer(timeoutMs) {
+    const ac = new AbortController(), t = setTimeout(() => ac.abort(), timeoutMs);
+    try {
+      await fetch(CONFIG.API_BASE + '/health?_=' + Date.now(), { signal: ac.signal, method: 'GET', cache: 'no-store' });
+      return true;
+    } catch (e) { return false; }
+    finally { clearTimeout(t); }
+  }
+  async function bootCheck() {
+    hideServerState();
+    document.getElementById('boot').classList.remove('hidden');
+    document.getElementById('bootStatus').textContent = 'Vérification du serveur…';
+    await new Promise(r => setTimeout(r, 250));
+    const ok = await pingServer(8000);
+    if (!ok) { showServerState(); return; }
+    document.getElementById('bootStatus').textContent = 'Serveur disponible ✓';
+    await new Promise(r => setTimeout(r, 350));
+    document.getElementById('boot').classList.add('hidden');
+    loadList().then(() => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const directVideo = urlParams.get('video');
+      if (directVideo) openCredits(directVideo);
+    });
+  }
 
   async function loadList() {
     try {
@@ -257,8 +420,7 @@
       allSheets = data.sheets;
       renderList(allSheets);
     } catch(e) {
-      document.getElementById('list-loading').innerHTML =
-        'Erreur de chargement : ' + e.message;
+      showServerState();
     }
   }
 
@@ -315,15 +477,13 @@
   }
 
   async function loadCredits(sheet) {
-    const url = `${CONFIG.API_BASE}/get?video=${encodeURIComponent(sheet)}`;
     try {
-      const res  = await fetch(url);
+      const res  = await fetch(`${CONFIG.API_BASE}/get?video=${encodeURIComponent(sheet)}`);
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       renderCredits(data.lines, data.duration);
     } catch(e) {
-      document.getElementById('credits-loading').innerHTML =
-        `<p style="color:#c87070;font-size:0.85rem;text-align:center;padding:20px">Impossible de charger.<br>${e.message}</p>`;
+      showServerState();
     }
   }
 
@@ -448,15 +608,7 @@
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  const urlParams  = new URLSearchParams(window.location.search);
-  const directVideo = urlParams.get('video');
-
-  if (directVideo) {
-    loadList();
-    openCredits(directVideo);
-  } else {
-    loadList();
-  }
+  bootCheck();
 </script>
 </body>
 </html>

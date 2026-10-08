@@ -1,40 +1,26 @@
-const { app, BrowserWindow, ipcMain, shell, session } = require('electron');
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
 
-// Forcer installation par utilisateur uniquement
 app.setPath('userData', path.join(app.getPath('appData'), 'CreditsAdmin'));
 
 let splashWindow = null;
 let mainWindow   = null;
 
-// ── Splash Screen ──────────────────────────────────────────────
 function createSplash() {
   splashWindow = new BrowserWindow({
-    width: 480,
-    height: 300,
-    frame: false,
-    transparent: true,
-    alwaysOnTop: true,
-    resizable: false,
-    center: true,
-    skipTaskbar: true,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-    },
+    width: 480, height: 300,
+    frame: false, transparent: true, alwaysOnTop: true,
+    resizable: false, center: true, skipTaskbar: true,
+    webPreferences: { nodeIntegration: false, contextIsolation: true },
   });
-
   splashWindow.loadFile(path.join(__dirname, 'splash.html'));
 }
 
-// ── Main Window ────────────────────────────────────────────────
 function createMain() {
   mainWindow = new BrowserWindow({
-    width: 1100,
-    height: 800,
-    minWidth: 800,
-    minHeight: 600,
-    frame: false,
+    width: 1100, height: 800,
+    minWidth: 800, minHeight: 600,
+    frame: true,                 // ← BARRE NATIVE (Windows : réduire/agrandir/fermer)
     show: false,
     backgroundColor: '#0a0a0f',
     icon: path.join(__dirname, 'assets', 'icon.png'),
@@ -42,23 +28,20 @@ function createMain() {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
+      webSecurity: false,        // ← nécessaire pour fetch vers Tailscale depuis file://
     },
   });
 
   mainWindow.loadFile(path.join(__dirname, 'admin.html'));
 
   mainWindow.once('ready-to-show', () => {
-    // Attendre que le splash soit affiché au moins 2,8s
     setTimeout(() => {
-      if (splashWindow && !splashWindow.isDestroyed()) {
-        splashWindow.destroy();
-      }
+      if (splashWindow && !splashWindow.isDestroyed()) splashWindow.destroy();
       mainWindow.show();
       mainWindow.focus();
     }, 2800);
   });
 
-  // Ouvrir les liens externes dans le navigateur système
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: 'deny' };
@@ -67,23 +50,7 @@ function createMain() {
   mainWindow.on('closed', () => { mainWindow = null; });
 }
 
-// ── CORS : injecter les headers pour les appels vers Tailscale Funnel ──
-// Les pages chargées en file:// ont une origine "null", ce qui bloque les
-// fetch() vers notre API. On ajoute les headers CORS à la volée sur les
-// réponses de l'API credits uniquement.
-function setupCorsInjection() {
-  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-    const headers = details.responseHeaders || {};
-    if (details.url.includes('nath.tailffd3b0.ts.net/credits/')) {
-      headers['Access-Control-Allow-Origin']  = ['*'];
-      headers['Access-Control-Allow-Headers'] = ['Content-Type, Authorization'];
-      headers['Access-Control-Allow-Methods'] = ['GET, POST, OPTIONS'];
-    }
-    callback({ responseHeaders: headers });
-  });
-}
-
-// ── IPC : contrôles fenêtre ────────────────────────────────────
+// IPC conservés par compatibilité (utiles si un jour on remet un frame custom)
 ipcMain.on('window-minimize', () => mainWindow && mainWindow.minimize());
 ipcMain.on('window-maximize', () => {
   if (!mainWindow) return;
@@ -91,9 +58,7 @@ ipcMain.on('window-maximize', () => {
 });
 ipcMain.on('window-close', () => mainWindow && mainWindow.close());
 
-// ── App lifecycle ──────────────────────────────────────────────
 app.whenReady().then(() => {
-  setupCorsInjection();
   createSplash();
   createMain();
 });

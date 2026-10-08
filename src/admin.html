@@ -17,62 +17,10 @@
     --text-dim: #8a8070;
     --red: #c87070;
     --green: #7db87d;
-    --titlebar-h: 38px;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: var(--dark); color: var(--text); font-family: 'Raleway', sans-serif; min-height: 100vh; }
-
-  #titlebar {
-    position: fixed; top: 0; left: 0; right: 0;
-    height: var(--titlebar-h);
-    background: #08080d;
-    border-bottom: 1px solid rgba(201,168,76,0.12);
-    display: flex; align-items: center; justify-content: space-between;
-    -webkit-app-region: drag;
-    z-index: 9999;
-    padding: 0 0 0 16px;
-    user-select: none;
-  }
-  .titlebar-left { display: flex; align-items: center; gap: 10px; }
-  .titlebar-icon {
-    width: 14px; height: 14px;
-    border: 1px solid rgba(201,168,76,0.4);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .titlebar-icon::before {
-    content: '';
-    width: 4px; height: 4px;
-    background: rgba(201,168,76,0.5);
-    display: block;
-  }
-  .titlebar-name {
-    font-family: 'Cinzel', serif;
-    font-size: 0.58rem; letter-spacing: 0.4em;
-    color: rgba(201,168,76,0.5);
-    text-transform: uppercase;
-  }
-  .titlebar-controls {
-    display: flex; align-items: stretch;
-    height: var(--titlebar-h);
-    -webkit-app-region: no-drag;
-  }
-  .wbtn {
-    width: 46px; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; border: none; background: transparent;
-    color: rgba(232,224,208,0.3);
-    font-size: 0.75rem;
-    transition: all 0.15s;
-    -webkit-app-region: no-drag;
-  }
-  .wbtn:hover { background: rgba(255,255,255,0.05); color: var(--text); }
-  .wbtn.close:hover { background: rgba(200,112,112,0.18); color: var(--red); }
-  .wbtn svg { width: 10px; height: 10px; }
-
-  #auth-screen { padding-top: calc(var(--titlebar-h) + 0px); }
-  #app { padding-top: var(--titlebar-h); }
 
   #auth-screen {
     position: fixed; inset: 0; z-index: 200;
@@ -126,9 +74,7 @@
   .video-item-meta { font-size: 0.7rem; color: var(--text-dim); margin-top: 3px; }
   .item-btns { display: flex; gap: 8px; }
 
-  .editor-header {
-    display: flex; align-items: center; gap: 16px; margin-bottom: 28px;
-  }
+  .editor-header { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
   .editor-header h2 {
     font-family: 'Cinzel', serif; font-size: 1rem;
     letter-spacing: 0.2em; color: var(--text);
@@ -145,9 +91,7 @@
     font-size: 0.88rem; padding: 11px 14px;
     outline: none; transition: border-color 0.2s; resize: vertical;
   }
-  .field-group input:focus, .field-group textarea:focus {
-    border-color: rgba(201,168,76,0.35);
-  }
+  .field-group input:focus, .field-group textarea:focus { border-color: rgba(201,168,76,0.35); }
   .field-group textarea { min-height: 320px; font-size: 0.85rem; line-height: 1.7; }
   .field-hint { font-size: 0.68rem; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.05em; }
   .editor-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
@@ -159,10 +103,7 @@
     display: none;
   }
   .url-box.visible { display: block; }
-  .url-box-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 10px;
-  }
+  .url-box-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   .url-box p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.08em; }
   .url-text {
     font-family: 'Raleway', sans-serif;
@@ -225,33 +166,128 @@
   #editor-loader small { font-size: 0.68rem; color: var(--text-dim); opacity: 0.5; letter-spacing: 0.12em; }
   #editor-fields { display: none; }
   #editor-fields.visible { display: block; }
-  .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(201,168,76,0.15), transparent); margin: 32px 0; }
+
+  /* ── BOOT ── */
+  #boot {
+    position: fixed; inset: 0; z-index: 900;
+    background: var(--dark);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 22px;
+    text-align: center; padding: 32px;
+  }
+  #boot.hidden { display: none; }
+  .boot-logo {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; color: var(--dark);
+    box-shadow: 0 8px 40px rgba(201,168,76,0.25);
+    animation: bootPulse 2s ease-in-out infinite;
+  }
+  @keyframes bootPulse {
+    0%,100% { transform: scale(1); box-shadow: 0 8px 40px rgba(201,168,76,0.25); }
+    50%     { transform: scale(1.05); box-shadow: 0 14px 52px rgba(201,168,76,0.4); }
+  }
+  .boot-title {
+    font-family: 'Cinzel', serif; font-size: 1.5rem;
+    letter-spacing: 0.35em; color: var(--text);
+    text-shadow: 0 0 40px rgba(201,168,76,0.3);
+  }
+  .boot-spinner {
+    width: 44px; height: 44px;
+    border: 2px solid rgba(201,168,76,0.15);
+    border-top-color: var(--gold); border-bottom-color: var(--gold-light);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  .boot-status {
+    font-family: 'Raleway', sans-serif; font-size: 0.72rem;
+    letter-spacing: 0.2em; color: var(--text-dim);
+    text-transform: uppercase;
+    animation: bootBlink 1.6s ease-in-out infinite;
+  }
+  @keyframes bootBlink { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+  /* ── SERVER STATE ── */
+  #serverState {
+    display: none;
+    position: fixed; inset: 0; z-index: 950;
+    background: var(--dark);
+    align-items: center; justify-content: center;
+    padding: 32px;
+  }
+  #serverState.visible { display: flex; }
+  .ss-card {
+    width: 100%; max-width: 560px;
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.2);
+    padding: 40px 32px;
+    text-align: center;
+    position: relative;
+  }
+  .ss-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .ss-icon { font-size: 52px; margin-bottom: 18px; }
+  .ss-title {
+    font-family: 'Cinzel', serif; font-size: 1.4rem;
+    letter-spacing: 0.15em; color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .ss-sub {
+    font-size: 0.85rem; color: var(--text-dim);
+    line-height: 1.7; margin-bottom: 22px;
+  }
+  .ss-sub b { color: var(--text); }
+  .ss-hours {
+    display: inline-block; padding: 8px 14px;
+    border: 1px solid rgba(201,168,76,0.2);
+    background: rgba(201,168,76,0.04);
+    font-size: 0.72rem; letter-spacing: 0.15em;
+    color: var(--gold-light); margin-bottom: 24px;
+  }
+  .ss-contact {
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 20px; font-size: 0.72rem; color: var(--text-dim);
+    line-height: 1.7;
+  }
+  .ss-contact a { color: var(--gold); text-decoration: none; }
+  .ss-contact a:hover { text-decoration: underline; }
+  .ss-retry {
+    margin-top: 16px;
+    font-family: 'Raleway', sans-serif; font-size: 0.68rem;
+    letter-spacing: 0.28em; text-transform: uppercase;
+    padding: 10px 22px;
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold);
+    background: transparent; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .ss-retry:hover { background: rgba(201,168,76,0.08); border-color: var(--gold); }
 </style>
 </head>
 <body>
 
-<div id="titlebar">
-  <div class="titlebar-left">
-    <div class="titlebar-icon"></div>
-    <span class="titlebar-name">Crédits Admin</span>
-  </div>
-  <div class="titlebar-controls">
-    <button class="wbtn" onclick="window.electronAPI && window.electronAPI.minimize()" title="Réduire">
-      <svg viewBox="0 0 10 1" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="10" height="1" fill="currentColor"/>
-      </svg>
-    </button>
-    <button class="wbtn" onclick="window.electronAPI && window.electronAPI.maximize()" title="Agrandir">
-      <svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0.5" y="0.5" width="9" height="9" stroke="currentColor"/>
-      </svg>
-    </button>
-    <button class="wbtn close" onclick="window.electronAPI && window.electronAPI.close()" title="Fermer">
-      <svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <line x1="0" y1="0" x2="10" y2="10" stroke="currentColor" stroke-width="1.2"/>
-        <line x1="10" y1="0" x2="0" y2="10" stroke="currentColor" stroke-width="1.2"/>
-      </svg>
-    </button>
+<div id="boot">
+  <div class="boot-logo">📋</div>
+  <div class="boot-title">CRÉDITS ADMIN</div>
+  <div class="boot-spinner"></div>
+  <div class="boot-status" id="bootStatus">Vérification du serveur…</div>
+</div>
+
+<div id="serverState">
+  <div class="ss-card">
+    <div class="ss-icon" id="ssIcon">🌙</div>
+    <div class="ss-title" id="ssTitle">Serveur momentanément indisponible</div>
+    <p class="ss-sub" id="ssText"></p>
+    <div class="ss-hours">Paris · 07:00 → 22:00</div>
+    <div class="ss-contact">
+      Un problème persiste ? Contactez l’administrateur :<br>
+      <a href="mailto:nathanael.bubbe@gmail.com">nathanael.bubbe@gmail.com</a>
+      <div><button class="ss-retry" onclick="bootCheck()">↻ Réessayer</button></div>
+    </div>
   </div>
 </div>
 
@@ -282,7 +318,6 @@
   </div>
 
   <div class="main">
-
     <div class="view active" id="view-list">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
         <p class="section-title" style="margin:0">Vidéos configurées</p>
@@ -298,18 +333,16 @@
           <p style="font-size:0.72rem;color:var(--text-dim);margin-top:4px;letter-spacing:0.06em" id="editor-sheetname"></p>
         </div>
       </div>
-
       <div id="editor-loader">
         <div class="spinner"></div>
         <p>Chargement des crédits…</p>
         <small>Synchronisation avec le serveur</small>
       </div>
-
       <div id="editor-fields">
         <div class="field-group">
           <label>Nom de l'onglet (identifiant URL)</label>
           <input type="text" id="edit-name" />
-          <p class="field-hint">Utilisé dans l'URL : ?video=<span id="hint-name">…</span></p>
+          <p class="field-hint">Utilisé dans l'URL : index.html?video=<span id="hint-name">…</span></p>
         </div>
         <div class="field-group">
           <label>Durée de défilement (secondes)</label>
@@ -321,17 +354,13 @@
           <p class="field-hint">Ligne 1 = titre · ## Section = titre doré · Ligne vide = espace</p>
         </div>
       </div>
-
       <div class="editor-actions">
         <button class="btn btn-gold" id="btn-save" onclick="saveEdit()">Enregistrer</button>
         <button class="btn btn-dim" onclick="showView('list')">Annuler</button>
         <button class="btn btn-red btn-sm" style="margin-left:auto" onclick="deleteVideo()">Supprimer</button>
       </div>
-
       <div class="url-box" id="edit-url-box">
-        <div class="url-box-header">
-          <p>Lien des crédits générés :</p>
-        </div>
+        <div class="url-box-header"><p>Lien des crédits générés :</p></div>
         <span class="url-text" id="edit-url-text"></span>
         <div class="url-actions">
           <button class="btn btn-gold btn-sm" onclick="copyUrl('edit-url-text')">📋 Copier</button>
@@ -341,13 +370,11 @@
     </div>
 
     <div class="view" id="view-create">
-      <div class="editor-header">
-        <h2>Nouvelle vidéo</h2>
-      </div>
+      <div class="editor-header"><h2>Nouvelle vidéo</h2></div>
       <div class="field-group">
         <label>Nom de l'onglet (identifiant URL) *</label>
         <input type="text" id="create-name" placeholder="ex: ParkourFinal2025" oninput="updateCreateHint()" />
-        <p class="field-hint">Sera utilisé dans : ?video=<span id="create-hint">…</span></p>
+        <p class="field-hint">Sera utilisé dans : index.html?video=<span id="create-hint">…</span></p>
       </div>
       <div class="field-group">
         <label>Durée de défilement (secondes)</label>
@@ -366,38 +393,87 @@
         </div>
       </div>
     </div>
-
   </div>
 </div>
 
 <div id="toast"></div>
 
 <script>
-  // ══════════════════════════════════════════════════════════
-  //  CONFIG — API via Tailscale Funnel
-  // ══════════════════════════════════════════════════════════
   const API       = 'https://nath.tailffd3b0.ts.net/credits/api';
-  const BASE_URL  = 'https://nathbu92.github.io/credits-app/index.html';  // ← corrigé
+  const BASE_URL  = 'https://nathbu92.github.io/credits-app/index.html';
   const TOKEN_KEY = 'credits_admin_token';
 
   let token = localStorage.getItem(TOKEN_KEY) || '';
   let isFirstLogin = false;
   let currentVideo = null;
 
+  function parisHour() {
+    const s = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', hour12: false }).format(new Date());
+    return Number(s);
+  }
+  function serverClosed() {
+    const h = parisHour();
+    return h >= 22 || h < 7;
+  }
+  function showServerState() {
+    document.getElementById('boot').classList.add('hidden');
+    const closed = serverClosed();
+    document.getElementById('ssIcon').textContent  = closed ? '🌙' : '⚠️';
+    document.getElementById('ssTitle').textContent = closed ? 'Serveur inactif' : 'Erreur du serveur';
+    document.getElementById('ssText').innerHTML = closed
+      ? 'Le serveur est actuellement inactif pendant la plage de maintenance nocturne.<br><b>Il sera de nouveau disponible à partir de 07:00 (heure de Paris).</b>'
+      : 'Le serveur ne répond pas actuellement.<br><b>Merci de réessayer dans quelques instants.</b> Si le problème continue, signalez-le à l’administrateur.';
+    document.getElementById('serverState').classList.add('visible');
+  }
+  function hideServerState() {
+    document.getElementById('serverState').classList.remove('visible');
+  }
+  async function pingServer(timeoutMs) {
+    const ac = new AbortController(), t = setTimeout(() => ac.abort(), timeoutMs);
+    try {
+      await fetch(API + '/health?_=' + Date.now(), { signal: ac.signal, method: 'GET', cache: 'no-store' });
+      return true;
+    } catch (e) {
+      return false;
+    } finally { clearTimeout(t); }
+  }
+  async function bootCheck() {
+    hideServerState();
+    document.getElementById('boot').classList.remove('hidden');
+    document.getElementById('bootStatus').textContent = 'Vérification du serveur…';
+    await new Promise(r => setTimeout(r, 250));
+    const ok = await pingServer(8000);
+    if (!ok) { showServerState(); return; }
+    document.getElementById('bootStatus').textContent = 'Serveur disponible ✓';
+    await new Promise(r => setTimeout(r, 350));
+    document.getElementById('boot').classList.add('hidden');
+    initAuth();
+  }
+
   function authHeaders() {
     return token ? { 'Authorization': 'Bearer ' + token } : {};
   }
   async function apiGet(path) {
-    const res = await fetch(`${API}/${path}`, { headers: authHeaders() });
-    return { status: res.status, data: await res.json().catch(() => ({})) };
+    try {
+      const res = await fetch(`${API}/${path}`, { headers: authHeaders() });
+      return { status: res.status, data: await res.json().catch(() => ({})) };
+    } catch (e) {
+      showServerState();
+      return { status: 0, data: { ok: false, error: 'Serveur injoignable' } };
+    }
   }
   async function apiPost(path, body) {
-    const res = await fetch(`${API}/${path}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...authHeaders() },
-      body: JSON.stringify(body || {}),
-    });
-    return { status: res.status, data: await res.json().catch(() => ({})) };
+    try {
+      const res = await fetch(`${API}/${path}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify(body || {}),
+      });
+      return { status: res.status, data: await res.json().catch(() => ({})) };
+    } catch (e) {
+      showServerState();
+      return { status: 0, data: { ok: false, error: 'Serveur injoignable' } };
+    }
   }
   function handle401() {
     token = '';
@@ -522,10 +598,7 @@
       btn.addEventListener('click', () => openEditor(btn.getAttribute('data-name')));
     });
     list.querySelectorAll('[data-url]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const u = btn.getAttribute('data-url');
-        window.open(u, '_blank');
-      });
+      btn.addEventListener('click', () => window.open(btn.getAttribute('data-url'), '_blank'));
     });
   }
 
@@ -644,14 +717,10 @@
     clearTimeout(el._t);
     el._t = setTimeout(() => el.className = '', 3000);
   }
-  function escHtml(str) {
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-  function esc2(str) {
-    return String(str).replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
+  function escHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function esc2(str)   { return String(str).replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  initAuth();
+  bootCheck();
 </script>
 </body>
 </html>
