@@ -26,7 +26,6 @@
     background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.75) 100%);
     pointer-events: none; z-index: 0;
   }
-
   body::before {
     content: ''; position: fixed; inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
@@ -234,8 +233,16 @@
     border: 1px solid rgba(201,168,76,0.2);
     background: rgba(201,168,76,0.04);
     font-size: 0.72rem; letter-spacing: 0.15em;
-    color: var(--gold-light); margin-bottom: 24px;
+    color: var(--gold-light); margin-bottom: 18px;
   }
+  .ss-next {
+    margin: 0 auto 22px; padding: 10px 14px;
+    border: 1px solid rgba(201,168,76,0.15);
+    background: rgba(201,168,76,0.03);
+    font-size: 0.72rem; color: var(--text-dim);
+    max-width: 320px;
+  }
+  .ss-next b { color: var(--gold); font-family: 'Raleway', sans-serif; letter-spacing: 0.1em; }
   .ss-contact {
     border-top: 1px solid rgba(255,255,255,0.06);
     padding-top: 20px; font-size: 0.72rem; color: var(--text-dim);
@@ -268,13 +275,15 @@
 <div id="serverState">
   <div class="ss-card">
     <div class="ss-icon" id="ssIcon">🌙</div>
-    <div class="ss-title" id="ssTitle">Serveur momentanément indisponible</div>
+    <div class="ss-title" id="ssTitle">Le serveur dort</div>
     <p class="ss-sub" id="ssText"></p>
     <div class="ss-hours">Paris · 07:00 → 22:00</div>
-    <div class="ss-contact">
-      Un problème persiste ? Contactez l’administrateur :<br>
-      <a href="mailto:nathanael.bubbe@gmail.com">nathanael.bubbe@gmail.com</a>
-      <div><button class="ss-retry" onclick="bootCheck()">↻ Réessayer</button></div>
+    <div class="ss-next">
+      Prochaine vérification dans <b><span id="ssCountdown">60</span> s</b>
+    </div>
+    <div class="ss-contact" id="ssContact">
+      Le serveur se réveillera automatiquement à 07:00 (heure de Paris).
+      <div><button class="ss-retry" onclick="retryServer()">↻ Réessayer maintenant</button></div>
     </div>
   </div>
 </div>
@@ -352,6 +361,9 @@
 </div>
 
 <script>
+  // ══════════════════════════════════════════════
+  //  CONFIG
+  // ══════════════════════════════════════════════
   const CONFIG = {
     API_BASE:            'https://nath.tailffd3b0.ts.net/credits/api',
     EMAILJS_PUBLIC_KEY:  'NxGFGvdon1YudMbyy',
@@ -366,6 +378,38 @@
   let isPaused    = false;
   let currentSheet = null;
 
+  // ══════════════════════════════════════════════
+  //  SERVER STATE (nuit / erreur) + retry auto 60s
+  // ══════════════════════════════════════════════
+  let serverStateShown = false;
+  let serverRetryTimer = null;
+  let serverCountdownTimer = null;
+  let serverRetryRemaining = 60;
+
+  function clearServerRetry() {
+    if (serverRetryTimer)     { clearInterval(serverRetryTimer);     serverRetryTimer = null; }
+    if (serverCountdownTimer) { clearInterval(serverCountdownTimer); serverCountdownTimer = null; }
+  }
+  function serverRetryReset() {
+    serverRetryRemaining = 60;
+    const el = document.getElementById('ssCountdown');
+    if (el) el.textContent = String(serverRetryRemaining);
+  }
+  function serverRetrySchedule() {
+    clearServerRetry();
+    serverRetryReset();
+    serverCountdownTimer = setInterval(() => {
+      if (!serverStateShown) return;
+      serverRetryRemaining = Math.max(0, serverRetryRemaining - 1);
+      const el = document.getElementById('ssCountdown');
+      if (el) el.textContent = String(serverRetryRemaining);
+    }, 1000);
+    serverRetryTimer = setInterval(() => {
+      if (!serverStateShown) return;
+      retryServer();
+    }, 60000);
+  }
+
   function parisHour() {
     const s = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', hour12: false }).format(new Date());
     return Number(s);
@@ -375,17 +419,49 @@
     return h >= 22 || h < 7;
   }
   function showServerState() {
+    serverStateShown = true;
     document.getElementById('boot').classList.add('hidden');
+    document.getElementById('view-list').style.display = 'none';
+    document.getElementById('view-credits').style.display = 'none';
+
     const closed = serverClosed();
     document.getElementById('ssIcon').textContent  = closed ? '🌙' : '⚠️';
-    document.getElementById('ssTitle').textContent = closed ? 'Serveur inactif' : 'Erreur du serveur';
+    document.getElementById('ssTitle').textContent = closed ? 'Le serveur dort' : 'Serveur momentanément indisponible';
+
     document.getElementById('ssText').innerHTML = closed
-      ? 'Le serveur est actuellement inactif pendant la plage de maintenance nocturne.<br><b>Il sera de nouveau disponible à partir de 07:00 (heure de Paris).</b>'
-      : 'Le serveur ne répond pas actuellement.<br><b>Merci de réessayer dans quelques instants.</b> Si le problème continue, signalez-le à l’administrateur.';
+      ? 'Le serveur est actuellement endormi pendant la plage de maintenance nocturne.<br><b>Il sera de nouveau disponible à partir de 07:00 (heure de Paris).</b>'
+      : 'Le serveur ne répond pas actuellement.<br><b>Merci de réessayer dans quelques instants.</b><br>Si le problème persiste, signalez-le à l’administrateur.';
+
+    document.getElementById('ssContact').innerHTML = closed
+      ? 'Le serveur se réveillera automatiquement à 07:00 (heure de Paris).<div><button class="ss-retry" onclick="retryServer()">↻ Réessayer maintenant</button></div>'
+      : 'Un problème persiste ? Contactez l’administrateur :<br><a href="mailto:nathanael.bubbe@gmail.com">nathanael.bubbe@gmail.com</a><div><button class="ss-retry" onclick="retryServer()">↻ Réessayer maintenant</button></div>';
+
     document.getElementById('serverState').classList.add('visible');
+    if (!serverRetryTimer && !serverCountdownTimer) serverRetrySchedule();
   }
   function hideServerState() {
     document.getElementById('serverState').classList.remove('visible');
+  }
+  function retryServer() {
+    serverStateShown = true;
+    serverRetryReset();
+    bootCheck();
+  }
+
+  // ══════════════════════════════════════════════
+  //  PING / FETCH TIMEOUT / BOOT
+  // ══════════════════════════════════════════════
+  async function fetchT(url, opt, action, ms) {
+    const ac = new AbortController(), t = setTimeout(() => ac.abort(), ms);
+    try {
+      const r = await fetch(url, { ...opt, signal: ac.signal });
+      if (r.status >= 500) { showServerState(); throw new Error('Le serveur a renvoyé une erreur HTTP ' + r.status); }
+      return await r.text();
+    } catch (e) {
+      if (e.name === 'AbortError') { showServerState(); throw new Error('Délai dépassé (' + ms/1000 + ' s) pour « ' + action + ' »'); }
+      showServerState();
+      throw e;
+    } finally { clearTimeout(t); }
   }
   async function pingServer(timeoutMs) {
     const ac = new AbortController(), t = setTimeout(() => ac.abort(), timeoutMs);
@@ -397,6 +473,8 @@
   }
   async function bootCheck() {
     hideServerState();
+    document.getElementById('view-list').style.display = 'none';
+    document.getElementById('view-credits').style.display = 'none';
     document.getElementById('boot').classList.remove('hidden');
     document.getElementById('bootStatus').textContent = 'Vérification du serveur…';
     await new Promise(r => setTimeout(r, 250));
@@ -405,13 +483,19 @@
     document.getElementById('bootStatus').textContent = 'Serveur disponible ✓';
     await new Promise(r => setTimeout(r, 350));
     document.getElementById('boot').classList.add('hidden');
+    clearServerRetry();
+    serverStateShown = false;
+    document.getElementById('view-list').style.display = 'block';
     loadList().then(() => {
-      const urlParams = new URLSearchParams(window.location.search);
+      const urlParams  = new URLSearchParams(window.location.search);
       const directVideo = urlParams.get('video');
       if (directVideo) openCredits(directVideo);
     });
   }
 
+  // ══════════════════════════════════════════════
+  //  API
+  // ══════════════════════════════════════════════
   async function loadList() {
     try {
       const res  = await fetch(`${CONFIG.API_BASE}/list`);
@@ -608,6 +692,9 @@
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
+  // ══════════════════════════════════════════════
+  //  GO
+  // ══════════════════════════════════════════════
   bootCheck();
 </script>
 </body>

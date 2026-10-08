@@ -22,6 +22,139 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: var(--dark); color: var(--text); font-family: 'Raleway', sans-serif; min-height: 100vh; }
 
+  /* ── VIEWS ── */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ── LOADER ── */
+  #loader {
+    display: none; position: fixed; inset: 0; z-index: 500;
+    background: rgba(10,10,15,0.92);
+    align-items: center; justify-content: center; flex-direction: column; gap: 16px;
+  }
+  #loader.show { display: flex; }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 2px solid rgba(201,168,76,0.15);
+    border-top-color: var(--gold); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader-msg {
+    font-family: 'Raleway', sans-serif; font-size: 0.75rem;
+    letter-spacing: 0.2em; color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  /* ── BOOT ── */
+  #boot {
+    position: fixed; inset: 0; z-index: 900;
+    background: var(--dark);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 22px;
+    text-align: center; padding: 32px;
+  }
+  #boot.hidden { display: none; }
+  .boot-logo {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; color: var(--dark);
+    box-shadow: 0 8px 40px rgba(201,168,76,0.25);
+    animation: bootPulse 2s ease-in-out infinite;
+  }
+  @keyframes bootPulse {
+    0%,100% { transform: scale(1); box-shadow: 0 8px 40px rgba(201,168,76,0.25); }
+    50%     { transform: scale(1.05); box-shadow: 0 14px 52px rgba(201,168,76,0.4); }
+  }
+  .boot-title {
+    font-family: 'Cinzel', serif; font-size: 1.5rem;
+    letter-spacing: 0.35em; color: var(--text);
+    text-shadow: 0 0 40px rgba(201,168,76,0.3);
+  }
+  .boot-spinner {
+    width: 44px; height: 44px;
+    border: 2px solid rgba(201,168,76,0.15);
+    border-top-color: var(--gold); border-bottom-color: var(--gold-light);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  .boot-status {
+    font-family: 'Raleway', sans-serif; font-size: 0.72rem;
+    letter-spacing: 0.2em; color: var(--text-dim);
+    text-transform: uppercase;
+    animation: bootBlink 1.6s ease-in-out infinite;
+  }
+  @keyframes bootBlink { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+  /* ── SERVER STATE ── */
+  #serverState {
+    display: none;
+    position: fixed; inset: 0; z-index: 950;
+    background: var(--dark);
+    align-items: center; justify-content: center;
+    padding: 32px;
+  }
+  #serverState.visible { display: flex; }
+  .ss-card {
+    width: 100%; max-width: 560px;
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.2);
+    padding: 40px 32px;
+    text-align: center;
+    position: relative;
+  }
+  .ss-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .ss-icon { font-size: 52px; margin-bottom: 18px; }
+  .ss-title {
+    font-family: 'Cinzel', serif; font-size: 1.4rem;
+    letter-spacing: 0.15em; color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .ss-sub {
+    font-size: 0.85rem; color: var(--text-dim);
+    line-height: 1.7; margin-bottom: 22px;
+  }
+  .ss-sub b { color: var(--text); }
+  .ss-hours {
+    display: inline-block; padding: 8px 14px;
+    border: 1px solid rgba(201,168,76,0.2);
+    background: rgba(201,168,76,0.04);
+    font-size: 0.72rem; letter-spacing: 0.15em;
+    color: var(--gold-light); margin-bottom: 18px;
+  }
+  .ss-next {
+    margin: 0 auto 22px; padding: 10px 14px;
+    border: 1px solid rgba(201,168,76,0.15);
+    background: rgba(201,168,76,0.03);
+    font-size: 0.72rem; color: var(--text-dim);
+    max-width: 320px;
+  }
+  .ss-next b { color: var(--gold); font-family: 'Raleway', sans-serif; letter-spacing: 0.1em; }
+  .ss-contact {
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 20px; font-size: 0.72rem; color: var(--text-dim);
+    line-height: 1.7;
+  }
+  .ss-contact a { color: var(--gold); text-decoration: none; }
+  .ss-contact a:hover { text-decoration: underline; }
+  .ss-retry {
+    margin-top: 16px;
+    font-family: 'Raleway', sans-serif; font-size: 0.68rem;
+    letter-spacing: 0.28em; text-transform: uppercase;
+    padding: 10px 22px;
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold);
+    background: transparent; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .ss-retry:hover { background: rgba(201,168,76,0.08); border-color: var(--gold); }
+
+  /* ── AUTH ── */
   #auth-screen {
     position: fixed; inset: 0; z-index: 200;
     background: var(--dark);
@@ -43,6 +176,7 @@
     background: linear-gradient(90deg, transparent, var(--gold), transparent);
   }
 
+  /* ── APP ── */
   #app { display: none; }
   .topbar {
     background: var(--dark2); border-bottom: 1px solid rgba(201,168,76,0.1);
@@ -54,9 +188,6 @@
   }
   .topbar-actions { display: flex; gap: 10px; }
   .main { max-width: 900px; margin: 0 auto; padding: 36px 24px 80px; }
-
-  .view { display: none; }
-  .view.active { display: block; }
 
   .section-title {
     font-family: 'Cinzel', serif; font-size: 0.72rem;
@@ -149,13 +280,12 @@
   input[type=number] { -moz-appearance: textfield; }
   input[type=number]::-webkit-outer-spin-button,
   input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
-  .spinner {
+  .spinner-list {
     width: 24px; height: 24px;
     border: 2px solid rgba(201,168,76,0.15);
     border-top-color: var(--gold); border-radius: 50%;
     animation: spin 0.8s linear infinite; margin: 40px auto;
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
   #editor-loader {
     display: none; flex-direction: column;
     align-items: center; justify-content: center;
@@ -166,110 +296,15 @@
   #editor-loader small { font-size: 0.68rem; color: var(--text-dim); opacity: 0.5; letter-spacing: 0.12em; }
   #editor-fields { display: none; }
   #editor-fields.visible { display: block; }
-
-  /* ── BOOT ── */
-  #boot {
-    position: fixed; inset: 0; z-index: 900;
-    background: var(--dark);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 22px;
-    text-align: center; padding: 32px;
-  }
-  #boot.hidden { display: none; }
-  .boot-logo {
-    width: 72px; height: 72px;
-    background: linear-gradient(135deg, var(--gold), var(--gold-light));
-    border-radius: 20px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 32px; color: var(--dark);
-    box-shadow: 0 8px 40px rgba(201,168,76,0.25);
-    animation: bootPulse 2s ease-in-out infinite;
-  }
-  @keyframes bootPulse {
-    0%,100% { transform: scale(1); box-shadow: 0 8px 40px rgba(201,168,76,0.25); }
-    50%     { transform: scale(1.05); box-shadow: 0 14px 52px rgba(201,168,76,0.4); }
-  }
-  .boot-title {
-    font-family: 'Cinzel', serif; font-size: 1.5rem;
-    letter-spacing: 0.35em; color: var(--text);
-    text-shadow: 0 0 40px rgba(201,168,76,0.3);
-  }
-  .boot-spinner {
-    width: 44px; height: 44px;
-    border: 2px solid rgba(201,168,76,0.15);
-    border-top-color: var(--gold); border-bottom-color: var(--gold-light);
-    border-radius: 50%;
-    animation: spin 0.9s linear infinite;
-  }
-  .boot-status {
-    font-family: 'Raleway', sans-serif; font-size: 0.72rem;
-    letter-spacing: 0.2em; color: var(--text-dim);
-    text-transform: uppercase;
-    animation: bootBlink 1.6s ease-in-out infinite;
-  }
-  @keyframes bootBlink { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
-
-  /* ── SERVER STATE ── */
-  #serverState {
-    display: none;
-    position: fixed; inset: 0; z-index: 950;
-    background: var(--dark);
-    align-items: center; justify-content: center;
-    padding: 32px;
-  }
-  #serverState.visible { display: flex; }
-  .ss-card {
-    width: 100%; max-width: 560px;
-    background: var(--dark2);
-    border: 1px solid rgba(201,168,76,0.2);
-    padding: 40px 32px;
-    text-align: center;
-    position: relative;
-  }
-  .ss-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  }
-  .ss-icon { font-size: 52px; margin-bottom: 18px; }
-  .ss-title {
-    font-family: 'Cinzel', serif; font-size: 1.4rem;
-    letter-spacing: 0.15em; color: var(--gold);
-    margin-bottom: 14px;
-  }
-  .ss-sub {
-    font-size: 0.85rem; color: var(--text-dim);
-    line-height: 1.7; margin-bottom: 22px;
-  }
-  .ss-sub b { color: var(--text); }
-  .ss-hours {
-    display: inline-block; padding: 8px 14px;
-    border: 1px solid rgba(201,168,76,0.2);
-    background: rgba(201,168,76,0.04);
-    font-size: 0.72rem; letter-spacing: 0.15em;
-    color: var(--gold-light); margin-bottom: 24px;
-  }
-  .ss-contact {
-    border-top: 1px solid rgba(255,255,255,0.06);
-    padding-top: 20px; font-size: 0.72rem; color: var(--text-dim);
-    line-height: 1.7;
-  }
-  .ss-contact a { color: var(--gold); text-decoration: none; }
-  .ss-contact a:hover { text-decoration: underline; }
-  .ss-retry {
-    margin-top: 16px;
-    font-family: 'Raleway', sans-serif; font-size: 0.68rem;
-    letter-spacing: 0.28em; text-transform: uppercase;
-    padding: 10px 22px;
-    border: 1px solid rgba(201,168,76,0.4);
-    color: var(--gold);
-    background: transparent; cursor: pointer;
-    transition: all 0.2s;
-  }
-  .ss-retry:hover { background: rgba(201,168,76,0.08); border-color: var(--gold); }
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(201,168,76,0.15), transparent); margin: 32px 0; }
 </style>
 </head>
 <body>
 
+<div id="toast"></div>
+<div id="loader"><div class="spinner"></div><div class="loader-msg" id="loaderMsg">Chargement...</div></div>
+
+<!-- BOOT -->
 <div id="boot">
   <div class="boot-logo">📋</div>
   <div class="boot-title">CRÉDITS ADMIN</div>
@@ -277,20 +312,24 @@
   <div class="boot-status" id="bootStatus">Vérification du serveur…</div>
 </div>
 
+<!-- SERVER STATE -->
 <div id="serverState">
   <div class="ss-card">
     <div class="ss-icon" id="ssIcon">🌙</div>
-    <div class="ss-title" id="ssTitle">Serveur momentanément indisponible</div>
+    <div class="ss-title" id="ssTitle">Le serveur dort</div>
     <p class="ss-sub" id="ssText"></p>
     <div class="ss-hours">Paris · 07:00 → 22:00</div>
-    <div class="ss-contact">
-      Un problème persiste ? Contactez l’administrateur :<br>
-      <a href="mailto:nathanael.bubbe@gmail.com">nathanael.bubbe@gmail.com</a>
-      <div><button class="ss-retry" onclick="bootCheck()">↻ Réessayer</button></div>
+    <div class="ss-next">
+      Prochaine vérification dans <b><span id="ssCountdown">60</span> s</b>
+    </div>
+    <div class="ss-contact" id="ssContact">
+      Le serveur se réveillera automatiquement à 07:00 (heure de Paris).
+      <div><button class="ss-retry" onclick="retryServer()">↻ Réessayer maintenant</button></div>
     </div>
   </div>
 </div>
 
+<!-- AUTH -->
 <div id="auth-screen">
   <h2>ADMINISTRATION</h2>
   <p id="auth-subtitle">Entrez le mot de passe</p>
@@ -308,6 +347,7 @@
   </div>
 </div>
 
+<!-- APP -->
 <div id="app">
   <div class="topbar">
     <span class="topbar-title">ADMIN — CRÉDITS</span>
@@ -323,7 +363,7 @@
         <p class="section-title" style="margin:0">Vidéos configurées</p>
         <button class="btn btn-gold btn-sm" onclick="showView('create')">+ Nouvelle vidéo</button>
       </div>
-      <div id="admin-list"><div class="spinner"></div></div>
+      <div id="admin-list"><div class="spinner-list"></div></div>
     </div>
 
     <div class="view" id="view-editor">
@@ -396,9 +436,10 @@
   </div>
 </div>
 
-<div id="toast"></div>
-
 <script>
+  // ══════════════════════════════════════════════════════════
+  //  CONFIG
+  // ══════════════════════════════════════════════════════════
   const API       = 'https://nath.tailffd3b0.ts.net/credits/api';
   const BASE_URL  = 'https://nathbu92.github.io/credits-app/index.html';
   const TOKEN_KEY = 'credits_admin_token';
@@ -406,6 +447,38 @@
   let token = localStorage.getItem(TOKEN_KEY) || '';
   let isFirstLogin = false;
   let currentVideo = null;
+
+  // ══════════════════════════════════════════════════════════
+  //  SERVER STATE (nuit / erreur) + retry auto 60s
+  // ══════════════════════════════════════════════════════════
+  let serverStateShown = false;
+  let serverRetryTimer = null;
+  let serverCountdownTimer = null;
+  let serverRetryRemaining = 60;
+
+  function clearServerRetry() {
+    if (serverRetryTimer)     { clearInterval(serverRetryTimer);     serverRetryTimer = null; }
+    if (serverCountdownTimer) { clearInterval(serverCountdownTimer); serverCountdownTimer = null; }
+  }
+  function serverRetryReset() {
+    serverRetryRemaining = 60;
+    const el = document.getElementById('ssCountdown');
+    if (el) el.textContent = String(serverRetryRemaining);
+  }
+  function serverRetrySchedule() {
+    clearServerRetry();
+    serverRetryReset();
+    serverCountdownTimer = setInterval(() => {
+      if (!serverStateShown) return;
+      serverRetryRemaining = Math.max(0, serverRetryRemaining - 1);
+      const el = document.getElementById('ssCountdown');
+      if (el) el.textContent = String(serverRetryRemaining);
+    }, 1000);
+    serverRetryTimer = setInterval(() => {
+      if (!serverStateShown) return;
+      retryServer();
+    }, 60000);
+  }
 
   function parisHour() {
     const s = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', hour12: false }).format(new Date());
@@ -416,29 +489,58 @@
     return h >= 22 || h < 7;
   }
   function showServerState() {
+    serverStateShown = true;
+    hideLoader();
     document.getElementById('boot').classList.add('hidden');
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'none';
+
     const closed = serverClosed();
     document.getElementById('ssIcon').textContent  = closed ? '🌙' : '⚠️';
-    document.getElementById('ssTitle').textContent = closed ? 'Serveur inactif' : 'Erreur du serveur';
+    document.getElementById('ssTitle').textContent = closed ? 'Le serveur dort' : 'Serveur momentanément indisponible';
+
     document.getElementById('ssText').innerHTML = closed
-      ? 'Le serveur est actuellement inactif pendant la plage de maintenance nocturne.<br><b>Il sera de nouveau disponible à partir de 07:00 (heure de Paris).</b>'
-      : 'Le serveur ne répond pas actuellement.<br><b>Merci de réessayer dans quelques instants.</b> Si le problème continue, signalez-le à l’administrateur.';
+      ? 'Le serveur est actuellement endormi pendant la plage de maintenance nocturne.<br><b>Il sera de nouveau disponible à partir de 07:00 (heure de Paris).</b>'
+      : 'Le serveur ne répond pas actuellement.<br><b>Merci de réessayer dans quelques instants.</b><br>Si le problème persiste, signalez-le à l’administrateur.';
+
+    document.getElementById('ssContact').innerHTML = closed
+      ? 'Le serveur se réveillera automatiquement à 07:00 (heure de Paris).<div><button class="ss-retry" onclick="retryServer()">↻ Réessayer maintenant</button></div>'
+      : 'Un problème persiste ? Contactez l’administrateur :<br><a href="mailto:nathanael.bubbe@gmail.com">nathanael.bubbe@gmail.com</a><div><button class="ss-retry" onclick="retryServer()">↻ Réessayer maintenant</button></div>';
+
     document.getElementById('serverState').classList.add('visible');
+    if (!serverRetryTimer && !serverCountdownTimer) serverRetrySchedule();
   }
   function hideServerState() {
     document.getElementById('serverState').classList.remove('visible');
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  PING / FETCH TIMEOUT / BOOT
+  // ══════════════════════════════════════════════════════════
+  async function fetchT(url, opt, action, ms) {
+    const ac = new AbortController(), t = setTimeout(() => ac.abort(), ms);
+    try {
+      const r = await fetch(url, { ...opt, signal: ac.signal });
+      if (r.status >= 500) { showServerState(); throw new Error('Le serveur a renvoyé une erreur HTTP ' + r.status); }
+      return await r.text();
+    } catch (e) {
+      if (e.name === 'AbortError') { showServerState(); throw new Error('Délai dépassé (' + ms/1000 + ' s) pour « ' + action + ' »'); }
+      showServerState();
+      throw e;
+    } finally { clearTimeout(t); }
   }
   async function pingServer(timeoutMs) {
     const ac = new AbortController(), t = setTimeout(() => ac.abort(), timeoutMs);
     try {
       await fetch(API + '/health?_=' + Date.now(), { signal: ac.signal, method: 'GET', cache: 'no-store' });
       return true;
-    } catch (e) {
-      return false;
-    } finally { clearTimeout(t); }
+    } catch (e) { return false; }
+    finally { clearTimeout(t); }
   }
   async function bootCheck() {
     hideServerState();
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'none';
     document.getElementById('boot').classList.remove('hidden');
     document.getElementById('bootStatus').textContent = 'Vérification du serveur…';
     await new Promise(r => setTimeout(r, 250));
@@ -447,9 +549,19 @@
     document.getElementById('bootStatus').textContent = 'Serveur disponible ✓';
     await new Promise(r => setTimeout(r, 350));
     document.getElementById('boot').classList.add('hidden');
+    clearServerRetry();
+    serverStateShown = false;
     initAuth();
   }
+  function retryServer() {
+    serverStateShown = true;
+    serverRetryReset();
+    bootCheck();
+  }
 
+  // ══════════════════════════════════════════════════════════
+  //  API HELPERS
+  // ══════════════════════════════════════════════════════════
   function authHeaders() {
     return token ? { 'Authorization': 'Bearer ' + token } : {};
   }
@@ -483,12 +595,16 @@
     document.getElementById('auth-subtitle').textContent = 'Session expirée — reconnecte-toi';
   }
 
+  // ══════════════════════════════════════════════════════════
+  //  AUTH
+  // ══════════════════════════════════════════════════════════
   async function initAuth() {
     if (token) {
       const { status } = await apiGet('me');
       if (status === 200) { showApp(); return; }
       token = ''; localStorage.removeItem(TOKEN_KEY);
     }
+    document.getElementById('auth-screen').style.display = 'flex';
     try {
       const { data } = await apiGet('checkpwd');
       if (data.firstLogin) {
@@ -547,6 +663,9 @@
     document.getElementById('auth-subtitle').textContent = 'Entrez le mot de passe';
   }
 
+  // ══════════════════════════════════════════════════════════
+  //  VIEWS
+  // ══════════════════════════════════════════════════════════
   function showView(name) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + name).classList.add('active');
@@ -561,7 +680,7 @@
 
   async function loadAdminList() {
     const list = document.getElementById('admin-list');
-    list.innerHTML = '<div class="spinner"></div><p style="text-align:center;color:var(--text-dim);font-size:0.75rem;margin-top:8px;letter-spacing:0.1em">Chargement…</p>';
+    list.innerHTML = '<div class="spinner-list"></div><p style="text-align:center;color:var(--text-dim);font-size:0.75rem;margin-top:8px;letter-spacing:0.1em">Chargement…</p>';
     try {
       const { status, data } = await apiGet('list');
       if (status === 401) return handle401();
@@ -710,6 +829,9 @@
     window.open(url, '_blank');
   }
 
+  // ══════════════════════════════════════════════════════════
+  //  UTILS
+  // ══════════════════════════════════════════════════════════
   function toast(msg, type = 'success') {
     const el = document.getElementById('toast');
     el.textContent = msg;
@@ -717,9 +839,19 @@
     clearTimeout(el._t);
     el._t = setTimeout(() => el.className = '', 3000);
   }
+  function showLoader(msg = 'Chargement...') {
+    document.getElementById('loaderMsg').textContent = msg;
+    document.getElementById('loader').classList.add('show');
+  }
+  function hideLoader() {
+    document.getElementById('loader').classList.remove('show');
+  }
   function escHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function esc2(str)   { return String(str).replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+  // ══════════════════════════════════════════════════════════
+  //  GO
+  // ══════════════════════════════════════════════════════════
   bootCheck();
 </script>
 </body>
