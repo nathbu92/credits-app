@@ -35,7 +35,6 @@
 
   .z { position: relative; z-index: 1; }
 
-  /* ══ LIST VIEW ══ */
   #view-list { min-height: 100vh; }
 
   .list-page { max-width: 720px; margin: 0 auto; padding: 60px 24px 100px; }
@@ -75,10 +74,8 @@
 
   .state-msg { text-align: center; padding: 50px 20px; color: var(--text-dim); font-size: 0.8rem; letter-spacing: 0.1em; line-height: 2; }
 
-  /* ══ CREDITS VIEW ══ */
   #view-credits { display: none; min-height: 100vh; }
 
-  /* Back button */
   #btn-back {
     position: fixed; top: 20px; left: 20px; z-index: 50;
     font-family: 'Raleway', sans-serif; font-size: 0.65rem;
@@ -89,7 +86,6 @@
   }
   #btn-back:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
 
-  /* Loading overlay */
   #credits-loading {
     position: fixed; inset: 0; z-index: 100; background: var(--dark);
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
@@ -100,7 +96,6 @@
   .spinner { width: 32px; height: 32px; border: 2px solid rgba(201,168,76,0.15); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Credits content */
   #credits-content { display: none; }
 
   header { text-align: center; padding: 60px 20px 30px; }
@@ -122,7 +117,6 @@
   .credit-line.empty { display: block; height: 1.5em; }
   .credit-divider { display: block; width: 40px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-light), transparent); margin: 20px auto; opacity: 0.4; }
 
-  /* Controls */
   #controls { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 50; display: flex; gap: 12px; }
   .btn { font-family: 'Raleway', sans-serif; font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; padding: 10px 22px; border: 1px solid; cursor: pointer; transition: all 0.25s; background: transparent; }
   .btn-pause { border-color: rgba(201,168,76,0.35); color: var(--gold); }
@@ -130,7 +124,6 @@
   .btn-report { border-color: rgba(180,60,60,0.35); color: #c87070; }
   .btn-report:hover { background: rgba(180,60,60,0.08); border-color: #c87070; }
 
-  /* End screen */
   #end-screen { display: none; position: fixed; inset: 0; z-index: 150; background: rgba(10,10,15,0.92); backdrop-filter: blur(6px); flex-direction: column; align-items: center; justify-content: center; gap: 24px; text-align: center; }
   #end-screen.visible { display: flex; animation: fadeIn 1.2s ease forwards; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -142,7 +135,6 @@
   .btn-back-list { border-color: rgba(255,255,255,0.12); color: var(--text-dim); }
   .btn-back-list:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
 
-  /* Modal */
   #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; backdrop-filter: blur(4px); align-items: center; justify-content: center; }
   #modal-overlay.open { display: flex; }
   #modal { background: var(--dark2); border: 1px solid rgba(201,168,76,0.2); padding: 40px; max-width: 480px; width: 90%; position: relative; }
@@ -166,7 +158,6 @@
 </head>
 <body>
 
-<!-- ══ LIST VIEW ══ -->
 <div id="view-list" class="z">
   <div class="list-page">
     <div class="list-header">
@@ -187,19 +178,16 @@
   </div>
 </div>
 
-<!-- ══ CREDITS VIEW ══ -->
 <div id="view-credits">
 
   <button id="btn-back" onclick="backToList()">← Retour</button>
 
-  <!-- Loading -->
   <div id="credits-loading">
     <div class="spinner"></div>
     <p>Connexion au serveur…</p>
     <small>Cela peut prendre quelques secondes</small>
   </div>
 
-  <!-- Content -->
   <div id="credits-content" class="z">
     <header>
       <p class="header-eyebrow">Production</p>
@@ -210,13 +198,11 @@
     </div>
   </div>
 
-  <!-- Controls -->
   <div id="controls">
     <button class="btn btn-pause" id="btn-pause" onclick="togglePause()">⏸ Pause</button>
     <button class="btn btn-report" onclick="openModal()">⚠ Signaler</button>
   </div>
 
-  <!-- End screen -->
   <div id="end-screen">
     <h2>FIN DES CRÉDITS</h2>
     <p>Tous les crédits ont défilé.</p>
@@ -226,7 +212,6 @@
     </div>
   </div>
 
-  <!-- Modal signalement -->
   <div id="modal-overlay">
     <div id="modal">
       <h2>SIGNALER UN PROBLÈME</h2>
@@ -247,14 +232,14 @@
 
 <script>
   // ══════════════════════════════════════════════
-  //  ⚙️  CONFIG — mets tes URLs ici
+  //  ⚙️  CONFIG
   // ══════════════════════════════════════════════
   const CONFIG = {
-    APPS_SCRIPT_URL:     'https://script.google.com/macros/s/AKfycbybtmHWgoVybTwgsXUWt9sofu67wyPgB8Z8L2rm8UEfzKBhf7lYIJubu87ZS7llO4Uw/exec',
+    API_BASE:            'https://nath.tailffd3b0.ts.net/credits/api',
     EMAILJS_PUBLIC_KEY:  'NxGFGvdon1YudMbyy',
     EMAILJS_SERVICE_ID:  'service_w8dgapk',
     EMAILJS_TEMPLATE_ID: 'template_t968ifo',
-    TO_EMAIL:            'webradiolesmartinets@gmail.com',
+    TO_EMAIL:            'webradiolesmartins@gmail.com',
   };
   // ══════════════════════════════════════════════
 
@@ -264,10 +249,9 @@
   let isPaused    = false;
   let currentSheet = null;
 
-  // ══ LIST ══
   async function loadList() {
     try {
-      const res  = await fetch(CONFIG.APPS_SCRIPT_URL + '?action=list');
+      const res  = await fetch(`${CONFIG.API_BASE}/list`);
       const data = await res.json();
       if (!data.ok) throw new Error(data.error);
       allSheets = data.sheets;
@@ -308,7 +292,6 @@
     renderList(filtered);
   }
 
-  // ══ NAVIGATION ══
   function openCredits(name) {
     currentSheet = name;
     isPaused = false;
@@ -325,16 +308,14 @@
   function backToList() {
     document.getElementById('view-credits').style.display = 'none';
     document.getElementById('view-list').style.display    = 'block';
-    // Stop animation
     const track = document.getElementById('credits-track');
     track.style.animation = 'none';
     document.getElementById('end-screen').classList.remove('visible');
     closeModal();
   }
 
-  // ══ CREDITS ══
   async function loadCredits(sheet) {
-    const url = `${CONFIG.APPS_SCRIPT_URL}?action=get&video=${encodeURIComponent(sheet)}`;
+    const url = `${CONFIG.API_BASE}/get?video=${encodeURIComponent(sheet)}`;
     try {
       const res  = await fetch(url);
       const data = await res.json();
@@ -418,7 +399,6 @@
     attachEndListener(track);
   }
 
-  // ══ MODAL ══
   function openModal() {
     document.getElementById('credits-track').classList.add('paused');
     document.getElementById('modal-overlay').classList.add('open');
@@ -468,12 +448,11 @@
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  // Si ?video= dans l'URL, ouvrir directement le lecteur
   const urlParams  = new URLSearchParams(window.location.search);
   const directVideo = urlParams.get('video');
 
   if (directVideo) {
-    loadList(); // charge en arrière-plan pour le retour
+    loadList();
     openCredits(directVideo);
   } else {
     loadList();

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, session } = require('electron');
 const path = require('path');
 
 // Forcer installation par utilisateur uniquement
@@ -67,6 +67,22 @@ function createMain() {
   mainWindow.on('closed', () => { mainWindow = null; });
 }
 
+// ── CORS : injecter les headers pour les appels vers Tailscale Funnel ──
+// Les pages chargées en file:// ont une origine "null", ce qui bloque les
+// fetch() vers notre API. On ajoute les headers CORS à la volée sur les
+// réponses de l'API credits uniquement.
+function setupCorsInjection() {
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    const headers = details.responseHeaders || {};
+    if (details.url.includes('nath.tailffd3b0.ts.net/credits/')) {
+      headers['Access-Control-Allow-Origin']  = ['*'];
+      headers['Access-Control-Allow-Headers'] = ['Content-Type, Authorization'];
+      headers['Access-Control-Allow-Methods'] = ['GET, POST, OPTIONS'];
+    }
+    callback({ responseHeaders: headers });
+  });
+}
+
 // ── IPC : contrôles fenêtre ────────────────────────────────────
 ipcMain.on('window-minimize', () => mainWindow && mainWindow.minimize());
 ipcMain.on('window-maximize', () => {
@@ -77,6 +93,7 @@ ipcMain.on('window-close', () => mainWindow && mainWindow.close());
 
 // ── App lifecycle ──────────────────────────────────────────────
 app.whenReady().then(() => {
+  setupCorsInjection();
   createSplash();
   createMain();
 });

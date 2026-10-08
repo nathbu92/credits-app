@@ -23,7 +23,6 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: var(--dark); color: var(--text); font-family: 'Raleway', sans-serif; min-height: 100vh; }
 
-  /* ── TITLEBAR ── */
   #titlebar {
     position: fixed; top: 0; left: 0; right: 0;
     height: var(--titlebar-h);
@@ -35,9 +34,7 @@
     padding: 0 0 0 16px;
     user-select: none;
   }
-  .titlebar-left {
-    display: flex; align-items: center; gap: 10px;
-  }
+  .titlebar-left { display: flex; align-items: center; gap: 10px; }
   .titlebar-icon {
     width: 14px; height: 14px;
     border: 1px solid rgba(201,168,76,0.4);
@@ -74,11 +71,9 @@
   .wbtn.close:hover { background: rgba(200,112,112,0.18); color: var(--red); }
   .wbtn svg { width: 10px; height: 10px; }
 
-  /* offset pour titlebar */
   #auth-screen { padding-top: calc(var(--titlebar-h) + 0px); }
   #app { padding-top: var(--titlebar-h); }
 
-  /* ── AUTH SCREEN ── */
   #auth-screen {
     position: fixed; inset: 0; z-index: 200;
     background: var(--dark);
@@ -100,7 +95,6 @@
     background: linear-gradient(90deg, transparent, var(--gold), transparent);
   }
 
-  /* ── LAYOUT ── */
   #app { display: none; }
   .topbar {
     background: var(--dark2); border-bottom: 1px solid rgba(201,168,76,0.1);
@@ -113,11 +107,9 @@
   .topbar-actions { display: flex; gap: 10px; }
   .main { max-width: 900px; margin: 0 auto; padding: 36px 24px 80px; }
 
-  /* ── VIEWS ── */
   .view { display: none; }
   .view.active { display: block; }
 
-  /* ── VIDEO LIST ── */
   .section-title {
     font-family: 'Cinzel', serif; font-size: 0.72rem;
     letter-spacing: 0.4em; color: var(--gold); text-transform: uppercase;
@@ -134,7 +126,6 @@
   .video-item-meta { font-size: 0.7rem; color: var(--text-dim); margin-top: 3px; }
   .item-btns { display: flex; gap: 8px; }
 
-  /* ── EDITOR ── */
   .editor-header {
     display: flex; align-items: center; gap: 16px; margin-bottom: 28px;
   }
@@ -161,7 +152,6 @@
   .field-hint { font-size: 0.68rem; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.05em; }
   .editor-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
 
-  /* ── URL BOX ── */
   .url-box {
     background: rgba(201,168,76,0.04);
     border: 1px solid rgba(201,168,76,0.2);
@@ -186,7 +176,6 @@
   }
   .url-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
-  /* ── BUTTONS ── */
   .btn {
     font-family: 'Raleway', sans-serif; font-size: 0.68rem;
     letter-spacing: 0.28em; text-transform: uppercase;
@@ -205,7 +194,6 @@
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .btn-sm { padding: 7px 14px; font-size: 0.62rem; }
 
-  /* ── TOAST ── */
   #toast {
     position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
     background: var(--dark3); border: 1px solid rgba(201,168,76,0.2);
@@ -217,7 +205,6 @@
   #toast.success { border-color: rgba(125,184,125,0.4); color: var(--green); }
   #toast.error   { border-color: rgba(200,112,112,0.4); color: var(--red); }
 
-  /* ── MISC ── */
   input[type=number] { -moz-appearance: textfield; }
   input[type=number]::-webkit-outer-spin-button,
   input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
@@ -243,7 +230,6 @@
 </head>
 <body>
 
-<!-- TITLEBAR -->
 <div id="titlebar">
   <div class="titlebar-left">
     <div class="titlebar-icon"></div>
@@ -269,7 +255,6 @@
   </div>
 </div>
 
-<!-- AUTH -->
 <div id="auth-screen">
   <h2>ADMINISTRATION</h2>
   <p id="auth-subtitle">Entrez le mot de passe</p>
@@ -287,7 +272,6 @@
   </div>
 </div>
 
-<!-- APP -->
 <div id="app">
   <div class="topbar">
     <span class="topbar-title">ADMIN — CRÉDITS</span>
@@ -299,7 +283,6 @@
 
   <div class="main">
 
-    <!-- VIEW: LIST -->
     <div class="view active" id="view-list">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
         <p class="section-title" style="margin:0">Vidéos configurées</p>
@@ -308,7 +291,6 @@
       <div id="admin-list"><div class="spinner"></div></div>
     </div>
 
-    <!-- VIEW: EDITOR -->
     <div class="view" id="view-editor">
       <div class="editor-header">
         <div>
@@ -358,7 +340,6 @@
       </div>
     </div>
 
-    <!-- VIEW: CREATE -->
     <div class="view" id="view-create">
       <div class="editor-header">
         <h2>Nouvelle vidéo</h2>
@@ -392,67 +373,104 @@
 <div id="toast"></div>
 
 <script>
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybtmHWgoVybTwgsXUWt9sofu67wyPgB8Z8L2rm8UEfzKBhf7lYIJubu87ZS7llO4Uw/exec';
-  const BASE_URL = 'https://nathbu92.github.io/Credits/';
+  // ══════════════════════════════════════════════════════════
+  //  CONFIG — API via Tailscale Funnel
+  // ══════════════════════════════════════════════════════════
+  const API       = 'https://nath.tailffd3b0.ts.net/credits/api';
+  const BASE_URL  = 'https://nathbu92.github.io/Credits/index.html';
+  const TOKEN_KEY = 'credits_admin_token';
 
-  let sessionPwd   = '';
-  let isFirstLogin  = false;
-  let currentVideo  = null;
+  let token = localStorage.getItem(TOKEN_KEY) || '';
+  let isFirstLogin = false;
+  let currentVideo = null;
 
-  // ── AUTH ────────────────────────────────────────────────────
+  function authHeaders() {
+    return token ? { 'Authorization': 'Bearer ' + token } : {};
+  }
+  async function apiGet(path) {
+    const res = await fetch(`${API}/${path}`, { headers: authHeaders() });
+    return { status: res.status, data: await res.json().catch(() => ({})) };
+  }
+  async function apiPost(path, body) {
+    const res = await fetch(`${API}/${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify(body || {}),
+    });
+    return { status: res.status, data: await res.json().catch(() => ({})) };
+  }
+  function handle401() {
+    token = '';
+    localStorage.removeItem(TOKEN_KEY);
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.getElementById('auth-subtitle').textContent = 'Session expirée — reconnecte-toi';
+  }
+
   async function initAuth() {
+    if (token) {
+      const { status } = await apiGet('me');
+      if (status === 200) { showApp(); return; }
+      token = ''; localStorage.removeItem(TOKEN_KEY);
+    }
     try {
-      const res  = await fetch(APPS_SCRIPT_URL + '?action=checkpwd&pwd=');
-      const data = await res.json();
+      const { data } = await apiGet('checkpwd');
       if (data.firstLogin) {
         isFirstLogin = true;
-        document.getElementById('auth-subtitle').textContent = 'Première connexion — définissez un mot de passe';
+        document.getElementById('auth-subtitle').textContent = 'Première connexion — définis un mot de passe';
         document.getElementById('pwd-label').textContent = 'Nouveau mot de passe';
         document.getElementById('pwd-confirm-wrap').style.display = 'block';
       }
-    } catch(e) {
-      // silencieux au démarrage
+    } catch (e) {
+      document.getElementById('auth-subtitle').textContent = 'Serveur injoignable';
     }
   }
-
-  async function submitAuth() {
-    const pwd   = document.getElementById('pwd-input').value;
-    const errEl = document.getElementById('auth-error');
-    errEl.textContent = '';
-    errEl.style.color = 'var(--text-dim)';
-
-    if (!pwd) { errEl.style.color = 'var(--red)'; errEl.textContent = 'Mot de passe requis.'; return; }
-    errEl.textContent = 'Connexion en cours…';
-
-    if (isFirstLogin) {
-      const confirm = document.getElementById('pwd-confirm').value;
-      if (pwd !== confirm) { errEl.textContent = 'Les mots de passe ne correspondent pas.'; return; }
-      const res  = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'setpwd', newPwd: pwd }) });
-      const data = await res.json();
-      if (!data.ok) { errEl.textContent = data.error; return; }
-    } else {
-      const res  = await fetch(`${APPS_SCRIPT_URL}?action=checkpwd&pwd=${encodeURIComponent(pwd)}`);
-      const data = await res.json();
-      if (!data.ok) { errEl.style.color = 'var(--red)'; errEl.textContent = 'Mot de passe incorrect.'; return; }
-    }
-
-    sessionPwd = pwd;
+  function showApp() {
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     loadAdminList();
-    document.getElementById('pwd-input').value = '';
-    document.getElementById('auth-error').textContent = '';
   }
 
-  function logout() {
-    sessionPwd = '';
+  async function submitAuth() {
+    const pwd = document.getElementById('pwd-input').value;
+    const errEl = document.getElementById('auth-error');
+    errEl.textContent = '';
+    errEl.style.color = 'var(--text-dim)';
+    if (!pwd) { errEl.style.color = 'var(--red)'; errEl.textContent = 'Mot de passe requis.'; return; }
+    errEl.textContent = 'Connexion en cours…';
+    try {
+      if (isFirstLogin) {
+        const confirm = document.getElementById('pwd-confirm').value;
+        if (pwd !== confirm) { errEl.style.color = 'var(--red)'; errEl.textContent = 'Les mots de passe ne correspondent pas.'; return; }
+        const setRes = await apiPost('setpwd', { newPwd: pwd });
+        if (!setRes.data.ok) { errEl.style.color = 'var(--red)'; errEl.textContent = setRes.data.error || 'Échec'; return; }
+      }
+      const res = await apiPost('login', { password: pwd });
+      if (!res.data.ok) { errEl.style.color = 'var(--red)'; errEl.textContent = res.data.error || 'Échec'; return; }
+      token = res.data.token;
+      localStorage.setItem(TOKEN_KEY, token);
+      document.getElementById('pwd-input').value = '';
+      document.getElementById('auth-error').textContent = '';
+      showApp();
+    } catch (e) {
+      errEl.style.color = 'var(--red)';
+      errEl.textContent = 'Erreur réseau : ' + e.message;
+    }
+  }
+  async function logout() {
+    try { await apiPost('logout', {}); } catch {}
+    token = '';
+    localStorage.removeItem(TOKEN_KEY);
     document.getElementById('auth-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
     document.getElementById('pwd-input').value = '';
     document.getElementById('auth-error').textContent = '';
+    isFirstLogin = false;
+    document.getElementById('pwd-confirm-wrap').style.display = 'none';
+    document.getElementById('pwd-label').textContent = 'Mot de passe';
+    document.getElementById('auth-subtitle').textContent = 'Entrez le mot de passe';
   }
 
-  // ── VIEWS ───────────────────────────────────────────────────
   function showView(name) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + name).classList.add('active');
@@ -465,24 +483,22 @@
     }
   }
 
-  // ── LIST ────────────────────────────────────────────────────
   async function loadAdminList() {
     const list = document.getElementById('admin-list');
-    list.innerHTML = '<div class="spinner"></div><p style="text-align:center;color:var(--text-dim);font-size:0.75rem;margin-top:8px;letter-spacing:0.1em">Connexion au serveur…<br><span style="font-size:0.68rem;opacity:0.6">Cela peut prendre quelques secondes</span></p>';
+    list.innerHTML = '<div class="spinner"></div><p style="text-align:center;color:var(--text-dim);font-size:0.75rem;margin-top:8px;letter-spacing:0.1em">Chargement…</p>';
     try {
-      const res  = await fetch(APPS_SCRIPT_URL + '?action=list');
-      const data = await res.json();
+      const { status, data } = await apiGet('list');
+      if (status === 401) return handle401();
       if (!data.ok) throw new Error(data.error);
       renderAdminList(data.sheets);
-    } catch(e) {
+    } catch (e) {
       list.innerHTML = `<p style="color:var(--red);font-size:0.8rem">Erreur : ${e.message}</p>`;
     }
   }
-
   function renderAdminList(sheets) {
     const list = document.getElementById('admin-list');
     list.innerHTML = '';
-    if (sheets.length === 0) {
+    if (!sheets.length) {
       list.innerHTML = '<p style="color:var(--text-dim);font-size:0.8rem;padding:20px 0">Aucune vidéo. Créez-en une.</p>';
       return;
     }
@@ -508,17 +524,11 @@
     list.querySelectorAll('[data-url]').forEach(btn => {
       btn.addEventListener('click', () => {
         const u = btn.getAttribute('data-url');
-        if (window.electronAPI) {
-          // Electron : ouvrir dans le navigateur système via shell.openExternal (géré dans main.js)
-          window.open(u, '_blank');
-        } else {
-          window.open(u, '_blank');
-        }
+        window.open(u, '_blank');
       });
     });
   }
 
-  // ── EDITOR ──────────────────────────────────────────────────
   async function openEditor(name) {
     currentVideo = name;
     document.getElementById('editor-heading').textContent = 'Modifier : ' + name;
@@ -527,54 +537,42 @@
     document.getElementById('editor-loader').classList.add('visible');
     document.getElementById('editor-fields').classList.remove('visible');
     document.getElementById('edit-url-box').classList.remove('visible');
+    document.getElementById('hint-name').textContent = name;
     document.getElementById('edit-name').oninput = () => {
       document.getElementById('hint-name').textContent = document.getElementById('edit-name').value || '…';
     };
-    document.getElementById('hint-name').textContent = name;
     showView('editor');
-
-    const res  = await fetch(`${APPS_SCRIPT_URL}?action=get&video=${encodeURIComponent(name)}`);
-    const data = await res.json();
+    const { status, data } = await apiGet(`get?video=${encodeURIComponent(name)}`);
+    if (status === 401) return handle401();
     if (!data.ok) { toast('Erreur : ' + data.error, 'error'); return; }
-
     document.getElementById('edit-duration').value = data.duration;
-    document.getElementById('edit-lines').value    = data.lines.join('\n');
-
+    document.getElementById('edit-lines').value = (data.lines || []).join('\n');
     const url = BASE_URL + '?video=' + encodeURIComponent(name);
     document.getElementById('edit-url-text').textContent = url;
     document.getElementById('edit-url-box').classList.add('visible');
-
     document.getElementById('editor-loader').classList.remove('visible');
     document.getElementById('editor-fields').classList.add('visible');
   }
 
   async function saveEdit() {
-    const btn      = document.getElementById('btn-save');
-    const newName  = document.getElementById('edit-name').value.trim();
+    const btn = document.getElementById('btn-save');
+    const newName = document.getElementById('edit-name').value.trim();
     const duration = parseInt(document.getElementById('edit-duration').value);
-    const lines    = document.getElementById('edit-lines').value.split('\n');
-
+    const lines = document.getElementById('edit-lines').value.split('\n');
     if (!newName) { toast('Le nom ne peut pas être vide.', 'error'); return; }
     btn.disabled = true; btn.textContent = 'Enregistrement…';
-
     try {
-      const res  = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'update', pwd: sessionPwd, video: currentVideo, newName, duration, lines })
-      });
-      const data = await res.json();
+      const { status, data } = await apiPost('update', { video: currentVideo, newName, duration, lines });
+      if (status === 401) { handle401(); return; }
       if (!data.ok) throw new Error(data.error);
-
       currentVideo = newName;
       document.getElementById('editor-heading').textContent = 'Modifier : ' + newName;
       document.getElementById('editor-sheetname').textContent = 'Onglet : ' + newName;
       document.getElementById('hint-name').textContent = newName;
-
       const url = BASE_URL + '?video=' + encodeURIComponent(newName);
       document.getElementById('edit-url-text').textContent = url;
-
       toast('Enregistré ✓', 'success');
-    } catch(e) {
+    } catch (e) {
       toast('Erreur : ' + e.message, 'error');
     } finally {
       btn.disabled = false; btn.textContent = 'Enregistrer';
@@ -582,63 +580,48 @@
   }
 
   async function deleteVideo() {
-    if (!confirm(`Supprimer définitivement l'onglet "${currentVideo}" ?`)) return;
+    if (!confirm(`Supprimer définitivement "${currentVideo}" ?`)) return;
     try {
-      const res  = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'delete', pwd: sessionPwd, video: currentVideo })
-      });
-      const data = await res.json();
+      const { status, data } = await apiPost('delete', { video: currentVideo });
+      if (status === 401) { handle401(); return; }
       if (!data.ok) throw new Error(data.error);
       toast('Supprimé.', 'success');
       showView('list');
-    } catch(e) {
+    } catch (e) {
       toast('Erreur : ' + e.message, 'error');
     }
   }
 
-  // ── CREATE ──────────────────────────────────────────────────
   function updateCreateHint() {
-    const v = document.getElementById('create-name').value;
-    document.getElementById('create-hint').textContent = v || '…';
+    document.getElementById('create-hint').textContent = document.getElementById('create-name').value || '…';
   }
-
   async function createVideo() {
-    const btn      = document.getElementById('btn-create');
-    const name     = document.getElementById('create-name').value.trim();
+    const btn = document.getElementById('btn-create');
+    const name = document.getElementById('create-name').value.trim();
     const duration = parseInt(document.getElementById('create-duration').value);
-
     if (!name) { toast('Le nom est requis.', 'error'); return; }
     btn.disabled = true; btn.textContent = 'Création…';
-
     try {
-      const res  = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'create', pwd: sessionPwd, name, duration })
-      });
-      const data = await res.json();
+      const { status, data } = await apiPost('create', { name, duration });
+      if (status === 401) { handle401(); return; }
       if (!data.ok) throw new Error(data.error);
-
       const url = BASE_URL + '?video=' + encodeURIComponent(name);
       document.getElementById('create-url-text').textContent = url;
       document.getElementById('create-url-box').classList.add('visible');
-
       toast('Vidéo créée ✓', 'success');
       setTimeout(() => openEditor(name), 800);
-    } catch(e) {
+    } catch (e) {
       toast('Erreur : ' + e.message, 'error');
     } finally {
       btn.disabled = false; btn.textContent = 'Créer';
     }
   }
 
-  // ── URL HELPERS ─────────────────────────────────────────────
   function copyUrl(elId) {
     const url = document.getElementById(elId).textContent.trim();
     navigator.clipboard.writeText(url).then(() => {
       toast('Lien copié ✓', 'success');
     }).catch(() => {
-      // fallback
       const ta = document.createElement('textarea');
       ta.value = url;
       document.body.appendChild(ta);
@@ -654,7 +637,6 @@
     window.open(url, '_blank');
   }
 
-  // ── UTILS ───────────────────────────────────────────────────
   function toast(msg, type = 'success') {
     const el = document.getElementById('toast');
     el.textContent = msg;
@@ -662,11 +644,9 @@
     clearTimeout(el._t);
     el._t = setTimeout(() => el.className = '', 3000);
   }
-
   function escHtml(str) {
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
-
   function esc2(str) {
     return String(str).replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
