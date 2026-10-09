@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — Crédits</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500;600&display=swap');
 
   :root {
     --gold: #c9a84c;
     --gold-light: #e8d08a;
+    --gold-dim: rgba(201,168,76,0.15);
     --dark: #0a0a0f;
     --dark2: #11111a;
     --dark3: #18181f;
@@ -22,7 +23,6 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: var(--dark); color: var(--text); font-family: 'Raleway', sans-serif; min-height: 100vh; }
 
-  /* ── VIEWS ── */
   .view { display: none; }
   .view.active { display: block; }
 
@@ -115,10 +115,7 @@
     letter-spacing: 0.15em; color: var(--gold);
     margin-bottom: 14px;
   }
-  .ss-sub {
-    font-size: 0.85rem; color: var(--text-dim);
-    line-height: 1.7; margin-bottom: 22px;
-  }
+  .ss-sub { font-size: 0.85rem; color: var(--text-dim); line-height: 1.7; margin-bottom: 22px; }
   .ss-sub b { color: var(--text); }
   .ss-hours {
     display: inline-block; padding: 8px 14px;
@@ -187,99 +184,212 @@
     letter-spacing: 0.25em; color: var(--gold);
   }
   .topbar-actions { display: flex; gap: 10px; }
-  .main { max-width: 900px; margin: 0 auto; padding: 36px 24px 80px; }
+  .main { max-width: 980px; margin: 0 auto; padding: 32px 24px 80px; }
 
-  .section-title {
-    font-family: 'Cinzel', serif; font-size: 0.72rem;
-    letter-spacing: 0.4em; color: var(--gold); text-transform: uppercase;
-    margin-bottom: 16px; opacity: 0.8;
+  /* ── LIST HEADER (titre + recherche + tri) ── */
+  .list-header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
+  }
+  .list-header h1 {
+    font-family: 'Cinzel', serif; font-size: 1.3rem;
+    letter-spacing: 0.1em; color: var(--text); font-weight: 400;
+  }
+  .list-header h1 .count {
+    font-family: 'Raleway', sans-serif; font-size: 0.75rem;
+    color: var(--text-dim); letter-spacing: 0.08em; margin-left: 8px;
+  }
+
+  .toolbar {
+    display: flex; gap: 12px; align-items: center;
+    margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .search-wrap {
+    position: relative; flex: 1; min-width: 240px;
+  }
+  .search-wrap input {
+    width: 100%; background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.15);
+    color: var(--text); font-family: 'Raleway', sans-serif;
+    font-size: 0.92rem; letter-spacing: 0.03em;
+    padding: 13px 44px 13px 42px;
+    outline: none; transition: border-color 0.2s;
+    border-radius: 2px;
+  }
+  .search-wrap input:focus { border-color: rgba(201,168,76,0.4); }
+  .search-wrap input::placeholder { color: var(--text-dim); }
+  .search-wrap .icon-l {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--text-dim); pointer-events: none; font-size: 1rem;
+  }
+  .search-wrap .clear {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--text-dim); cursor: pointer; font-size: 1rem;
+    background: transparent; border: none; padding: 4px 8px;
+    display: none;
+  }
+  .search-wrap .clear.visible { display: block; }
+  .search-wrap .clear:hover { color: var(--text); }
+
+  .sort-select {
+    background: var(--dark2); border: 1px solid rgba(201,168,76,0.15);
+    color: var(--text); font-family: 'Raleway', sans-serif;
+    font-size: 0.82rem; letter-spacing: 0.06em;
+    padding: 12px 36px 12px 14px;
+    outline: none; cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a8070' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 14px;
+    border-radius: 2px;
+    transition: border-color 0.2s;
+  }
+  .sort-select:focus { border-color: rgba(201,168,76,0.4); }
+  .sort-select option { background: var(--dark2); color: var(--text); }
+
+  /* ── VIDEO LIST ── */
+  #admin-list {
+    display: flex; flex-direction: column; gap: 6px;
   }
   .video-item {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 15px 18px; background: var(--dark2);
-    border: 1px solid rgba(255,255,255,0.04);
-    margin-bottom: 2px; transition: border-color 0.2s;
+    padding: 18px 20px; background: var(--dark2);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-left: 3px solid rgba(201,168,76,0.2);
+    transition: all 0.15s;
+    border-radius: 2px;
   }
-  .video-item:hover { border-color: rgba(201,168,76,0.15); }
-  .video-item-title { font-size: 0.88rem; letter-spacing: 0.06em; }
-  .video-item-meta { font-size: 0.7rem; color: var(--text-dim); margin-top: 3px; }
-  .item-btns { display: flex; gap: 8px; }
+  .video-item:hover {
+    border-color: rgba(201,168,76,0.3);
+    border-left-color: var(--gold);
+    background: var(--dark3);
+    transform: translateX(2px);
+  }
+  .video-item-main { flex: 1; min-width: 0; }
+  .video-item-title {
+    font-family: 'Cinzel', serif; font-size: 1rem;
+    letter-spacing: 0.08em; color: var(--text);
+    margin-bottom: 6px; word-break: break-word;
+  }
+  .video-item-title mark {
+    background: rgba(201,168,76,0.25); color: var(--gold-light);
+    padding: 1px 3px; border-radius: 2px;
+  }
+  .video-item-meta {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    font-size: 0.7rem; color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+  .video-item-meta .tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 2px;
+  }
+  .video-item-meta .tag b { color: var(--gold); font-weight: 500; }
+  .video-item-meta mark {
+    background: rgba(201,168,76,0.2); color: var(--gold-light);
+    padding: 0 2px;
+  }
+  .item-btns { display: flex; gap: 8px; margin-left: 16px; }
 
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+    color: var(--text-dim); font-size: 0.85rem;
+    letter-spacing: 0.1em;
+  }
+  .empty-state .icon { font-size: 2.5rem; margin-bottom: 14px; opacity: 0.4; }
+
+  /* ── EDITOR / CREATE ── */
   .editor-header { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
   .editor-header h2 {
-    font-family: 'Cinzel', serif; font-size: 1rem;
-    letter-spacing: 0.2em; color: var(--text);
+    font-family: 'Cinzel', serif; font-size: 1.1rem;
+    letter-spacing: 0.15em; color: var(--text);
   }
-  .field-group { margin-bottom: 20px; }
+  .field-group { margin-bottom: 22px; }
   .field-group label {
     display: block; font-size: 0.65rem; letter-spacing: 0.35em;
-    text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px;
+    text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px;
+    font-weight: 500;
   }
   .field-group input, .field-group textarea {
     width: 100%; background: var(--dark2);
     border: 1px solid rgba(255,255,255,0.08);
     color: var(--text); font-family: 'Raleway', sans-serif;
-    font-size: 0.88rem; padding: 11px 14px;
+    font-size: 0.92rem; padding: 13px 16px;
     outline: none; transition: border-color 0.2s; resize: vertical;
+    border-radius: 2px;
   }
-  .field-group input:focus, .field-group textarea:focus { border-color: rgba(201,168,76,0.35); }
-  .field-group textarea { min-height: 320px; font-size: 0.85rem; line-height: 1.7; }
-  .field-hint { font-size: 0.68rem; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.05em; }
-  .editor-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  .field-group input:focus, .field-group textarea:focus {
+    border-color: rgba(201,168,76,0.4);
+    background: rgba(201,168,76,0.02);
+  }
+  .field-group textarea { min-height: 340px; font-size: 0.88rem; line-height: 1.75; }
+  .field-hint {
+    font-size: 0.7rem; color: var(--text-dim);
+    margin-top: 8px; letter-spacing: 0.05em;
+  }
+  .field-hint code {
+    background: rgba(201,168,76,0.1); color: var(--gold-light);
+    padding: 1px 6px; border-radius: 2px;
+    font-family: 'Raleway', sans-serif; font-size: 0.68rem;
+  }
+  .editor-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
 
   .url-box {
     background: rgba(201,168,76,0.04);
     border: 1px solid rgba(201,168,76,0.2);
-    padding: 16px 18px; margin-top: 20px;
-    display: none;
+    padding: 20px 22px; margin-top: 24px;
+    display: none; border-radius: 2px;
   }
   .url-box.visible { display: block; }
-  .url-box-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-  .url-box p { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.08em; }
+  .url-box p { font-size: 0.72rem; color: var(--text-dim); letter-spacing: 0.08em; margin-bottom: 10px; }
   .url-text {
-    font-family: 'Raleway', sans-serif;
-    font-size: 0.8rem; color: var(--gold-light);
+    font-size: 0.82rem; color: var(--gold-light);
     word-break: break-all; letter-spacing: 0.03em;
-    background: rgba(0,0,0,0.2);
-    padding: 8px 12px;
+    background: rgba(0,0,0,0.25);
+    padding: 10px 14px;
     border: 1px solid rgba(201,168,76,0.1);
-    display: block; margin-bottom: 10px;
-    user-select: all;
+    display: block; margin-bottom: 12px;
+    user-select: all; border-radius: 2px;
   }
-  .url-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .url-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
+  /* ── BUTTONS ── */
   .btn {
     font-family: 'Raleway', sans-serif; font-size: 0.68rem;
     letter-spacing: 0.28em; text-transform: uppercase;
-    padding: 10px 20px; border: 1px solid;
+    padding: 11px 22px; border: 1px solid;
     cursor: pointer; transition: all 0.2s; background: transparent;
-    white-space: nowrap;
+    white-space: nowrap; border-radius: 2px; font-weight: 500;
   }
   .btn-gold { border-color: rgba(201,168,76,0.4); color: var(--gold); }
-  .btn-gold:hover { background: rgba(201,168,76,0.08); border-color: var(--gold); }
+  .btn-gold:hover { background: rgba(201,168,76,0.1); border-color: var(--gold); }
   .btn-red { border-color: rgba(200,112,112,0.35); color: var(--red); }
   .btn-red:hover { background: rgba(200,112,112,0.08); border-color: var(--red); }
   .btn-dim { border-color: rgba(255,255,255,0.1); color: var(--text-dim); }
-  .btn-dim:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+  .btn-dim:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
   .btn-green { border-color: rgba(125,184,125,0.35); color: var(--green); }
   .btn-green:hover { background: rgba(125,184,125,0.08); border-color: var(--green); }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-sm { padding: 7px 14px; font-size: 0.62rem; }
+  .btn-sm { padding: 8px 14px; font-size: 0.62rem; }
 
   #toast {
     position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
-    background: var(--dark3); border: 1px solid rgba(201,168,76,0.2);
-    padding: 12px 24px; font-size: 0.75rem; letter-spacing: 0.1em;
+    background: var(--dark3); border: 1px solid rgba(201,168,76,0.25);
+    padding: 13px 26px; font-size: 0.78rem; letter-spacing: 0.1em;
     z-index: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none;
-    white-space: nowrap;
+    white-space: nowrap; border-radius: 2px;
   }
   #toast.show { opacity: 1; }
-  #toast.success { border-color: rgba(125,184,125,0.4); color: var(--green); }
-  #toast.error   { border-color: rgba(200,112,112,0.4); color: var(--red); }
+  #toast.success { border-color: rgba(125,184,125,0.5); color: var(--green); }
+  #toast.error   { border-color: rgba(200,112,112,0.5); color: var(--red); }
 
   input[type=number] { -moz-appearance: textfield; }
   input[type=number]::-webkit-outer-spin-button,
   input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
   .spinner-list {
     width: 24px; height: 24px;
     border: 2px solid rgba(201,168,76,0.15);
@@ -296,7 +406,6 @@
   #editor-loader small { font-size: 0.68rem; color: var(--text-dim); opacity: 0.5; letter-spacing: 0.12em; }
   #editor-fields { display: none; }
   #editor-fields.visible { display: block; }
-  .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(201,168,76,0.15), transparent); margin: 32px 0; }
 </style>
 </head>
 <body>
@@ -304,7 +413,6 @@
 <div id="toast"></div>
 <div id="loader"><div class="spinner"></div><div class="loader-msg" id="loaderMsg">Chargement...</div></div>
 
-<!-- BOOT -->
 <div id="boot">
   <div class="boot-logo">📋</div>
   <div class="boot-title">CRÉDITS ADMIN</div>
@@ -312,7 +420,6 @@
   <div class="boot-status" id="bootStatus">Vérification du serveur…</div>
 </div>
 
-<!-- SERVER STATE -->
 <div id="serverState">
   <div class="ss-card">
     <div class="ss-icon" id="ssIcon">🌙</div>
@@ -329,7 +436,6 @@
   </div>
 </div>
 
-<!-- AUTH -->
 <div id="auth-screen">
   <h2>ADMINISTRATION</h2>
   <p id="auth-subtitle">Entrez le mot de passe</p>
@@ -347,7 +453,6 @@
   </div>
 </div>
 
-<!-- APP -->
 <div id="app">
   <div class="topbar">
     <span class="topbar-title">ADMIN — CRÉDITS</span>
@@ -358,19 +463,41 @@
   </div>
 
   <div class="main">
+    <!-- VIEW : LIST -->
     <div class="view active" id="view-list">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-        <p class="section-title" style="margin:0">Vidéos configurées</p>
+      <div class="list-header">
+        <h1>Vidéos <span class="count" id="video-count"></span></h1>
         <button class="btn btn-gold btn-sm" onclick="showView('create')">+ Nouvelle vidéo</button>
       </div>
+
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="icon-l">⌕</span>
+          <input type="text" id="admin-search"
+                 placeholder="Rechercher une vidéo (titre, identifiant)…"
+                 autocomplete="off" spellcheck="false"
+                 oninput="onSearchInput()" />
+          <button class="clear" id="admin-search-clear" onclick="clearSearch()" title="Effacer">✕</button>
+        </div>
+        <select class="sort-select" id="admin-sort" onchange="applyFilters()">
+          <option value="recent">Plus récentes</option>
+          <option value="oldest">Plus anciennes</option>
+          <option value="alpha">Ordre alphabétique (A→Z)</option>
+          <option value="alpha_desc">Ordre alphabétique (Z→A)</option>
+          <option value="lines_desc">Plus de lignes</option>
+          <option value="duration_desc">Durée la plus longue</option>
+        </select>
+      </div>
+
       <div id="admin-list"><div class="spinner-list"></div></div>
     </div>
 
+    <!-- VIEW : EDITOR -->
     <div class="view" id="view-editor">
       <div class="editor-header">
         <div>
           <h2 id="editor-heading">Modifier la vidéo</h2>
-          <p style="font-size:0.72rem;color:var(--text-dim);margin-top:4px;letter-spacing:0.06em" id="editor-sheetname"></p>
+          <p style="font-size:0.72rem;color:var(--text-dim);margin-top:6px;letter-spacing:0.06em" id="editor-sheetname"></p>
         </div>
       </div>
       <div id="editor-loader">
@@ -382,7 +509,7 @@
         <div class="field-group">
           <label>Nom de l'onglet (identifiant URL)</label>
           <input type="text" id="edit-name" />
-          <p class="field-hint">Utilisé dans l'URL : index.html?video=<span id="hint-name">…</span></p>
+          <p class="field-hint">Utilisé dans l'URL : <code>index.html?video=<span id="hint-name">…</span></code></p>
         </div>
         <div class="field-group">
           <label>Durée de défilement (secondes)</label>
@@ -391,7 +518,7 @@
         <div class="field-group">
           <label>Contenu des crédits</label>
           <textarea id="edit-lines" spellcheck="false"></textarea>
-          <p class="field-hint">Ligne 1 = titre · ## Section = titre doré · Ligne vide = espace</p>
+          <p class="field-hint">Ligne 1 = titre · <code>## Section</code> = titre doré · Ligne vide = espace</p>
         </div>
       </div>
       <div class="editor-actions">
@@ -400,7 +527,7 @@
         <button class="btn btn-red btn-sm" style="margin-left:auto" onclick="deleteVideo()">Supprimer</button>
       </div>
       <div class="url-box" id="edit-url-box">
-        <div class="url-box-header"><p>Lien des crédits générés :</p></div>
+        <p>Lien des crédits générés :</p>
         <span class="url-text" id="edit-url-text"></span>
         <div class="url-actions">
           <button class="btn btn-gold btn-sm" onclick="copyUrl('edit-url-text')">📋 Copier</button>
@@ -409,12 +536,13 @@
       </div>
     </div>
 
+    <!-- VIEW : CREATE -->
     <div class="view" id="view-create">
       <div class="editor-header"><h2>Nouvelle vidéo</h2></div>
       <div class="field-group">
         <label>Nom de l'onglet (identifiant URL) *</label>
         <input type="text" id="create-name" placeholder="ex: ParkourFinal2025" oninput="updateCreateHint()" />
-        <p class="field-hint">Sera utilisé dans : index.html?video=<span id="create-hint">…</span></p>
+        <p class="field-hint">Sera utilisé dans : <code>index.html?video=<span id="create-hint">…</span></code></p>
       </div>
       <div class="field-group">
         <label>Durée de défilement (secondes)</label>
@@ -447,9 +575,11 @@
   let token = localStorage.getItem(TOKEN_KEY) || '';
   let isFirstLogin = false;
   let currentVideo = null;
+  let allVideos    = [];   // liste brute depuis l'API
+  let filteredVideos = []; // liste après filtres + tri
 
   // ══════════════════════════════════════════════════════════
-  //  SERVER STATE (nuit / erreur) + retry auto 60s
+  //  SERVER STATE
   // ══════════════════════════════════════════════════════════
   let serverStateShown = false;
   let serverRetryTimer = null;
@@ -480,9 +610,13 @@
     }, 60000);
   }
 
+  // Fix : Intl peut renvoyer "20 h" en fr-FR, on force en-GB + formatToParts
   function parisHour() {
-    const s = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', hour12: false }).format(new Date());
-    return Number(s);
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/Paris', hour: '2-digit', hourCycle: 'h23'
+    }).formatToParts(new Date());
+    const h = parts.find(p => p.type === 'hour');
+    return parseInt(h ? h.value : '0', 10);
   }
   function serverClosed() {
     const h = parisHour();
@@ -515,20 +649,8 @@
   }
 
   // ══════════════════════════════════════════════════════════
-  //  PING / FETCH TIMEOUT / BOOT
+  //  PING / BOOT
   // ══════════════════════════════════════════════════════════
-  async function fetchT(url, opt, action, ms) {
-    const ac = new AbortController(), t = setTimeout(() => ac.abort(), ms);
-    try {
-      const r = await fetch(url, { ...opt, signal: ac.signal });
-      if (r.status >= 500) { showServerState(); throw new Error('Le serveur a renvoyé une erreur HTTP ' + r.status); }
-      return await r.text();
-    } catch (e) {
-      if (e.name === 'AbortError') { showServerState(); throw new Error('Délai dépassé (' + ms/1000 + ' s) pour « ' + action + ' »'); }
-      showServerState();
-      throw e;
-    } finally { clearTimeout(t); }
-  }
   async function pingServer(timeoutMs) {
     const ac = new AbortController(), t = setTimeout(() => ac.abort(), timeoutMs);
     try {
@@ -560,7 +682,7 @@
   }
 
   // ══════════════════════════════════════════════════════════
-  //  API HELPERS
+  //  API
   // ══════════════════════════════════════════════════════════
   function authHeaders() {
     return token ? { 'Authorization': 'Bearer ' + token } : {};
@@ -678,6 +800,9 @@
     }
   }
 
+  // ══════════════════════════════════════════════════════════
+  //  LIST + SEARCH INTELLIGENTE
+  // ══════════════════════════════════════════════════════════
   async function loadAdminList() {
     const list = document.getElementById('admin-list');
     list.innerHTML = '<div class="spinner-list"></div><p style="text-align:center;color:var(--text-dim);font-size:0.75rem;margin-top:8px;letter-spacing:0.1em">Chargement…</p>';
@@ -685,30 +810,184 @@
       const { status, data } = await apiGet('list');
       if (status === 401) return handle401();
       if (!data.ok) throw new Error(data.error);
-      renderAdminList(data.sheets);
+      allVideos = data.sheets || [];
+      applyFilters();
     } catch (e) {
-      list.innerHTML = `<p style="color:var(--red);font-size:0.8rem">Erreur : ${e.message}</p>`;
+      list.innerHTML = `<p style="color:var(--red);font-size:0.85rem;text-align:center;padding:20px">Erreur : ${e.message}</p>`;
     }
   }
-  function renderAdminList(sheets) {
+
+  // ── Recherche "intelligente" ──
+  // 1. Score par correspondance exacte de nom (priorité max)
+  // 2. Score par correspondance exacte de titre
+  // 3. Score par préfixe
+  // 4. Score par "tous les mots présents" (ordre libre)
+  // 5. Score par "sous-chaîne"
+  // Bonus : insensible à la casse ET aux accents
+  function normalize(str) {
+    return String(str || '').toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // enlève les accents
+  }
+
+  function fuzzyScore(video, query) {
+    if (!query) return 1;
+    const name  = normalize(video.name);
+    const title = normalize(video.title || '');
+    const q     = normalize(query).trim();
+    if (!q) return 1;
+
+    // Correspondance exacte nom
+    if (name === q) return 10000;
+    // Correspondance exacte titre
+    if (title === q) return 9000;
+    // Nom commence par
+    if (name.startsWith(q)) return 8000 - name.length;
+    // Titre commence par
+    if (title.startsWith(q)) return 7000 - title.length;
+    // Nom contient
+    if (name.includes(q)) return 5000 - name.indexOf(q);
+    // Titre contient
+    if (title.includes(q)) return 4000 - title.indexOf(q);
+
+    // Tous les mots de la query présents dans name ou title (ordre libre)
+    const words = q.split(/\s+/).filter(Boolean);
+    if (words.length > 1) {
+      const hay = name + ' ' + title;
+      const allMatch = words.every(w => hay.includes(w));
+      if (allMatch) return 3000 - words.length;
+    }
+
+    // Sous-séquence (caractères dans l'ordre, non contigus) — typo-tolérant
+    function isSubsequence(needle, hay) {
+      let i = 0;
+      for (let j = 0; j < hay.length && i < needle.length; j++) {
+        if (hay[j] === needle[i]) i++;
+      }
+      return i === needle.length;
+    }
+    if (isSubsequence(q, name))  return 1000;
+    if (isSubsequence(q, title)) return 900;
+
+    return 0;
+  }
+
+  function highlightMatch(text, query) {
+    if (!query) return escHtml(text);
+    const t = String(text || '');
+    // Recherche insensible casse+accents
+    const nT = normalize(t);
+    const nQ = normalize(query).trim();
+    if (!nQ) return escHtml(t);
+
+    // Essaie : (1) correspondance directe, (2) mots, (3) sous-chaîne
+    let idx = nT.indexOf(nQ);
+    let matchLen = nQ.length;
+
+    if (idx === -1) {
+      // Essaie avec le premier mot
+      const firstWord = nQ.split(/\s+/)[0];
+      if (firstWord.length >= 2) {
+        idx = nT.indexOf(firstWord);
+        matchLen = firstWord.length;
+      }
+    }
+
+    if (idx === -1) return escHtml(t);
+    return escHtml(t.slice(0, idx)) +
+           '<mark>' + escHtml(t.slice(idx, idx + matchLen)) + '</mark>' +
+           escHtml(t.slice(idx + matchLen));
+  }
+
+  function onSearchInput() {
+    const val = document.getElementById('admin-search').value;
+    document.getElementById('admin-search-clear').classList.toggle('visible', val.length > 0);
+    applyFilters();
+  }
+  function clearSearch() {
+    document.getElementById('admin-search').value = '';
+    document.getElementById('admin-search-clear').classList.remove('visible');
+    applyFilters();
+    document.getElementById('admin-search').focus();
+  }
+
+  function applyFilters() {
+    const q = document.getElementById('admin-search').value.trim();
+    const sort = document.getElementById('admin-sort').value;
+
+    let items = allVideos.slice();
+
+    // Filtrage
+    if (q) {
+      items = items.map(v => ({ v, score: fuzzyScore(v, q) }))
+                   .filter(x => x.score > 0)
+                   .sort((a, b) => b.score - a.score)
+                   .map(x => x.v);
+    }
+
+    // Tri (appliqué seulement si pas de recherche active)
+    if (!q) {
+      switch (sort) {
+        case 'recent':       items.reverse(); break; // l'API renvoie déjà du + récent au + ancien
+        case 'oldest':       break;
+        case 'alpha':        items.sort((a, b) => a.name.localeCompare(b.name, 'fr')); break;
+        case 'alpha_desc':   items.sort((a, b) => b.name.localeCompare(a.name, 'fr')); break;
+        case 'lines_desc':   items.sort((a, b) => (b.lines || 0) - (a.lines || 0)); break;
+        case 'duration_desc':items.sort((a, b) => (b.duration || 0) - (a.duration || 0)); break;
+      }
+    }
+
+    filteredVideos = items;
+    renderAdminList(items, q);
+  }
+
+  function renderAdminList(sheets, query) {
     const list = document.getElementById('admin-list');
+    const counter = document.getElementById('video-count');
+
+    if (query) {
+      counter.textContent = `— ${sheets.length} résultat${sheets.length > 1 ? 's' : ''} sur ${allVideos.length}`;
+    } else {
+      counter.textContent = `— ${sheets.length} au total`;
+    }
+
     list.innerHTML = '';
+
     if (!sheets.length) {
-      list.innerHTML = '<p style="color:var(--text-dim);font-size:0.8rem;padding:20px 0">Aucune vidéo. Créez-en une.</p>';
+      if (query) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">🔍</div>
+            Aucune vidéo ne correspond à « ${escHtml(query)} »<br>
+            <small style="opacity:0.6">Essaie un autre mot-clé ou efface la recherche</small>
+          </div>`;
+      } else {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">📋</div>
+            Aucune vidéo.<br>
+            <small style="opacity:0.6">Clique sur « + Nouvelle vidéo » pour commencer</small>
+          </div>`;
+      }
       return;
     }
+
     sheets.forEach(s => {
       const url = BASE_URL + '?video=' + encodeURIComponent(s.name);
+      const title = s.title || s.name;
       const div = document.createElement('div');
       div.className = 'video-item';
       div.innerHTML = `
-        <div>
-          <div class="video-item-title">${escHtml(s.title || s.name)}</div>
-          <div class="video-item-meta">${escHtml(s.name)} · ${s.duration}s · ${s.lines} lignes</div>
+        <div class="video-item-main">
+          <div class="video-item-title">${highlightMatch(title, query)}</div>
+          <div class="video-item-meta">
+            <span class="tag">🏷 <b>${highlightMatch(s.name, query)}</b></span>
+            <span class="tag">⏱ <b>${s.duration}s</b></span>
+            <span class="tag">📄 <b>${s.lines || 0}</b> ligne${(s.lines || 0) > 1 ? 's' : ''}</span>
+          </div>
         </div>
         <div class="item-btns">
           <button class="btn btn-green btn-sm" data-url="${esc2(url)}" title="Ouvrir dans le navigateur">🌐</button>
-          <button class="btn btn-dim btn-sm" data-name="${esc2(s.name)}">Modifier</button>
+          <button class="btn btn-gold btn-sm" data-name="${esc2(s.name)}">Modifier</button>
         </div>
       `;
       list.appendChild(div);
@@ -721,6 +1000,9 @@
     });
   }
 
+  // ══════════════════════════════════════════════════════════
+  //  EDITOR
+  // ══════════════════════════════════════════════════════════
   async function openEditor(name) {
     currentVideo = name;
     document.getElementById('editor-heading').textContent = 'Modifier : ' + name;
@@ -784,6 +1066,9 @@
     }
   }
 
+  // ══════════════════════════════════════════════════════════
+  //  CREATE
+  // ══════════════════════════════════════════════════════════
   function updateCreateHint() {
     document.getElementById('create-hint').textContent = document.getElementById('create-name').value || '…';
   }
@@ -823,7 +1108,6 @@
       toast('Lien copié ✓', 'success');
     });
   }
-
   function openInBrowser(elId) {
     const url = document.getElementById(elId).textContent.trim();
     window.open(url, '_blank');
