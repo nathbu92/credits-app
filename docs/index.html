@@ -35,9 +35,7 @@
   .z { position: relative; z-index: 1; }
 
   #view-list { min-height: 100vh; }
-
   .list-page { max-width: 720px; margin: 0 auto; padding: 60px 24px 100px; }
-
   .list-header { text-align: center; margin-bottom: 44px; }
   .list-header::after {
     content: ''; display: block; width: 60px; height: 1px;
@@ -107,17 +105,12 @@
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
     mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
   }
+  /* Plus d'animation CSS : c'est le JS qui pilote le scroll via Web Animations API */
   #credits-track {
     text-align: center;
-    padding: 20px 20px 40px;
-    animation: scrollUp 30s linear forwards;
+    padding: 40px 20px 60px;
     will-change: transform;
-  }
-  #credits-track.paused { animation-play-state: paused; }
-  /* ⚡ from = position calculée en JS (démarre au bord bas de la zone visible) */
-  @keyframes scrollUp {
-    from { transform: translateY(var(--start-y, 70vh)); }
-    to   { transform: translateY(-100%); }
+    transform: translateY(100vh); /* position par défaut avant démarrage, pour éviter un flash */
   }
 
   .credit-line { font-weight: 300; font-size: clamp(0.95rem, 2.2vw, 1.15rem); letter-spacing: 0.08em; color: var(--text); line-height: 1.9; }
@@ -232,10 +225,7 @@
     letter-spacing: 0.15em; color: var(--gold);
     margin-bottom: 14px;
   }
-  .ss-sub {
-    font-size: 0.85rem; color: var(--text-dim);
-    line-height: 1.7; margin-bottom: 22px;
-  }
+  .ss-sub { font-size: 0.85rem; color: var(--text-dim); line-height: 1.7; margin-bottom: 22px; }
   .ss-sub b { color: var(--text); }
   .ss-hours {
     display: inline-block; padding: 8px 14px;
@@ -387,6 +377,11 @@
   let isPaused    = false;
   let currentSheet = null;
 
+  // Web Animations API state
+  let currentAnim = null;
+  let modalPaused = false;
+  let currentDuration = 30;
+
   // ══════════════════════════════════════════════
   //  SERVER STATE (nuit / erreur) + retry auto 60s
   // ══════════════════════════════════════════════
@@ -419,7 +414,6 @@
     }, 60000);
   }
 
-  // Fix : Intl peut renvoyer "20 h" en fr-FR, on force en-GB + formatToParts
   function parisHour() {
     const parts = new Intl.DateTimeFormat('en-GB', {
       timeZone: 'Europe/Paris', hour: '2-digit', hourCycle: 'h23'
@@ -542,6 +536,7 @@
   function openCredits(name) {
     currentSheet = name;
     isPaused = false;
+    modalPaused = false;
     document.getElementById('view-list').style.display    = 'none';
     document.getElementById('view-credits').style.display = 'block';
     document.getElementById('credits-loading').style.display  = 'flex';
@@ -553,10 +548,9 @@
   }
 
   function backToList() {
+    if (currentAnim) { currentAnim.cancel(); currentAnim = null; }
     document.getElementById('view-credits').style.display = 'none';
     document.getElementById('view-list').style.display    = 'block';
-    const track = document.getElementById('credits-track');
-    track.style.animation = 'none';
     document.getElementById('end-screen').classList.remove('visible');
     closeModal();
   }
@@ -573,47 +567,57 @@
   }
 
   // ══════════════════════════════════════════════
-  //  DÉFILEMENT INTELLIGENT
-  //  → Détecte la position du texte et démarre
-  //    le défilement immédiatement, sans attente.
+  //  SCROLL (Web Animations API)
+  //
+  //  Principe :
+  //   - On mesure la position réelle du premier texte
+  //   - On place son bord BAS à ~88% de la hauteur du wrapper (juste
+  //     au-dessus de la zone de fondu du mask) → l'utilisateur voit
+  //     le texte dès le lancement
+  //   - On anime vers translateY(-100%) → tout monte et sort par le haut
   // ══════════════════════════════════════════════
-  function computeStartY(wrapper, track) {
-    // Position souhaitée : le premier texte réel doit être juste au bord bas
-    // de la zone visible (ou très légèrement au-dessus), pour que le défilement
-    // commence immédiatement.
+  function startCreditsScroll(duration) {
+    const track   = document.getElementById('credits-track');
+    const wrapper = document.getElementById('credits-wrapper');
+
+    // Stop l'anim en cours
+    if (currentAnim) { currentAnim.cancel(); currentAnim = null; }
+
+    // Mesure
     const wrapperH = wrapper.clientHeight;
-
-    // On cherche la position du premier élément contenant du texte
     const firstText = track.querySelector('.credit-line:not(.empty)');
-    let offsetInto = 0;
-    if (firstText) {
-      // offsetTop du premier texte dans le track
-      offsetInto = firstText.offsetTop;
-    }
+    const firstTextY = firstText ? firstText.offsetTop : 0;
+    const firstTextH = firstText ? firstText.offsetHeight : 0;
 
-    // startY = wrapperH + offsetInto - petit delta
-    // → le haut du track est placé wrapperH pixels plus bas, MAIS on recule de
-    //   offsetInto pour que le premier texte soit au bord bas du wrapper.
-    // Petit delta de -20px pour qu'un bout du texte soit déjà visible.
-    return wrapperH + offsetInto - 20;
-  }
+    // Bord bas du premier texte à 88% de la hauteur visible
+    // → visible immédiatement, juste au-dessus du fondu bas
+    const startY = (wrapperH * 0.88) - firstTextY - firstTextH;
 
-  function startCreditsScroll(track, wrapper, duration) {
-    // Reset de l'animation pour pouvoir la relancer proprement
-    track.style.animation = 'none';
-    track.style.transform = 'none';
-    // Force un reflow pour que le navigateur prenne en compte le reset
-    track.offsetHeight;
+    // Reset inline transform éventuel
+    track.style.transform = '';
 
-    // Position de départ calculée
-    const startY = computeStartY(wrapper, track);
-    track.style.setProperty('--start-y', startY + 'px');
+    // Animation
+    currentAnim = track.animate(
+      [
+        { transform: `translateY(${startY}px)` },
+        { transform: `translateY(-100%)` }
+      ],
+      {
+        duration: duration * 1000,
+        fill: 'forwards',
+        easing: 'linear'
+      }
+    );
 
-    // Relance l'animation
-    track.style.animation = '';
-    track.style.animationDuration = duration + 's';
+    currentAnim.onfinish = () => {
+      document.getElementById('end-screen').classList.add('visible');
+      document.getElementById('controls').style.display = 'none';
+    };
 
-    attachEndListener(track);
+    isPaused = false;
+    modalPaused = false;
+    currentDuration = duration;
+    document.getElementById('btn-pause').textContent = '⏸ Pause';
   }
 
   function renderCredits(lines, sheetDuration) {
@@ -647,46 +651,46 @@
       track.appendChild(el);
     });
 
-    const wrapper = document.getElementById('credits-wrapper');
     const duration = sheetDuration || 30;
-    track._duration = duration;
 
-    // Démarre le scroll en tenant compte de la position réelle du texte
-    startCreditsScroll(track, wrapper, duration);
-
-    document.getElementById('credits-loading').style.display = 'none';
-    document.getElementById('credits-content').style.display = 'block';
-  }
-
-  function attachEndListener(track) {
-    track.addEventListener('animationend', () => {
-      document.getElementById('end-screen').classList.add('visible');
-      document.getElementById('controls').style.display = 'none';
-    }, { once: true });
+    // On attend 1 frame pour que le layout soit calculé, puis on démarre
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        startCreditsScroll(duration);
+        document.getElementById('credits-loading').style.display = 'none';
+        document.getElementById('credits-content').style.display = 'block';
+      });
+    });
   }
 
   function togglePause() {
+    if (!currentAnim) return;
+    const btn = document.getElementById('btn-pause');
     const track = document.getElementById('credits-track');
-    const btn   = document.getElementById('btn-pause');
-    isPaused = !isPaused;
-    track.classList.toggle('paused', isPaused);
-    btn.textContent = isPaused ? '▶ Reprendre' : '⏸ Pause';
+    if (isPaused) {
+      currentAnim.play();
+      track.classList.remove('paused');
+      btn.textContent = '⏸ Pause';
+      isPaused = false;
+    } else {
+      currentAnim.pause();
+      track.classList.add('paused');
+      btn.textContent = '▶ Reprendre';
+      isPaused = true;
+    }
   }
 
   function replayCredits() {
-    const track = document.getElementById('credits-track');
-    const wrapper = document.getElementById('credits-wrapper');
     document.getElementById('end-screen').classList.remove('visible');
     document.getElementById('controls').style.display = 'flex';
-    isPaused = false;
-    document.getElementById('btn-pause').textContent = '⏸ Pause';
-    track.classList.remove('paused');
-
-    // Relance avec recalcul de la position de départ
-    startCreditsScroll(track, wrapper, track._duration || 30);
+    startCreditsScroll(currentDuration);
   }
 
   function openModal() {
+    if (currentAnim && !isPaused && currentAnim.playState === 'running') {
+      currentAnim.pause();
+      modalPaused = true;
+    }
     document.getElementById('credits-track').classList.add('paused');
     document.getElementById('modal-overlay').classList.add('open');
     document.getElementById('modal-status').textContent = '';
@@ -697,7 +701,11 @@
     document.getElementById('modal-overlay').classList.remove('open');
     document.getElementById('report-message').value = '';
     document.getElementById('reporter-name').value  = '';
-    if (!isPaused) document.getElementById('credits-track').classList.remove('paused');
+    if (modalPaused) {
+      currentAnim.play();
+      modalPaused = false;
+      if (!isPaused) document.getElementById('credits-track').classList.remove('paused');
+    }
   }
 
   async function sendReport() {
