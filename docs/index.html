@@ -107,9 +107,18 @@
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
     mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
   }
-  #credits-track { text-align: center; padding: 80px 20px; animation: scrollUp 30s linear forwards; }
+  #credits-track {
+    text-align: center;
+    padding: 20px 20px 40px;
+    animation: scrollUp 30s linear forwards;
+    will-change: transform;
+  }
   #credits-track.paused { animation-play-state: paused; }
-  @keyframes scrollUp { from { transform: translateY(100vh); } to { transform: translateY(-100%); } }
+  /* ⚡ from = position calculée en JS (démarre au bord bas de la zone visible) */
+  @keyframes scrollUp {
+    from { transform: translateY(var(--start-y, 70vh)); }
+    to   { transform: translateY(-100%); }
+  }
 
   .credit-line { font-weight: 300; font-size: clamp(0.95rem, 2.2vw, 1.15rem); letter-spacing: 0.08em; color: var(--text); line-height: 1.9; }
   .credit-line.section-title { font-family: 'Cinzel', serif; font-size: clamp(0.72rem, 1.5vw, 0.88rem); letter-spacing: 0.4em; color: var(--gold); text-transform: uppercase; margin: 32px 0 8px; opacity: 0.85; }
@@ -410,9 +419,13 @@
     }, 60000);
   }
 
+  // Fix : Intl peut renvoyer "20 h" en fr-FR, on force en-GB + formatToParts
   function parisHour() {
-    const s = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', hour12: false }).format(new Date());
-    return Number(s);
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/Paris', hour: '2-digit', hourCycle: 'h23'
+    }).formatToParts(new Date());
+    const h = parts.find(p => p.type === 'hour');
+    return parseInt(h ? h.value : '0', 10);
   }
   function serverClosed() {
     const h = parisHour();
@@ -449,20 +462,8 @@
   }
 
   // ══════════════════════════════════════════════
-  //  PING / FETCH TIMEOUT / BOOT
+  //  PING / BOOT
   // ══════════════════════════════════════════════
-  async function fetchT(url, opt, action, ms) {
-    const ac = new AbortController(), t = setTimeout(() => ac.abort(), ms);
-    try {
-      const r = await fetch(url, { ...opt, signal: ac.signal });
-      if (r.status >= 500) { showServerState(); throw new Error('Le serveur a renvoyé une erreur HTTP ' + r.status); }
-      return await r.text();
-    } catch (e) {
-      if (e.name === 'AbortError') { showServerState(); throw new Error('Délai dépassé (' + ms/1000 + ' s) pour « ' + action + ' »'); }
-      showServerState();
-      throw e;
-    } finally { clearTimeout(t); }
-  }
   async function pingServer(timeoutMs) {
     const ac = new AbortController(), t = setTimeout(() => ac.abort(), timeoutMs);
     try {
@@ -571,6 +572,50 @@
     }
   }
 
+  // ══════════════════════════════════════════════
+  //  DÉFILEMENT INTELLIGENT
+  //  → Détecte la position du texte et démarre
+  //    le défilement immédiatement, sans attente.
+  // ══════════════════════════════════════════════
+  function computeStartY(wrapper, track) {
+    // Position souhaitée : le premier texte réel doit être juste au bord bas
+    // de la zone visible (ou très légèrement au-dessus), pour que le défilement
+    // commence immédiatement.
+    const wrapperH = wrapper.clientHeight;
+
+    // On cherche la position du premier élément contenant du texte
+    const firstText = track.querySelector('.credit-line:not(.empty)');
+    let offsetInto = 0;
+    if (firstText) {
+      // offsetTop du premier texte dans le track
+      offsetInto = firstText.offsetTop;
+    }
+
+    // startY = wrapperH + offsetInto - petit delta
+    // → le haut du track est placé wrapperH pixels plus bas, MAIS on recule de
+    //   offsetInto pour que le premier texte soit au bord bas du wrapper.
+    // Petit delta de -20px pour qu'un bout du texte soit déjà visible.
+    return wrapperH + offsetInto - 20;
+  }
+
+  function startCreditsScroll(track, wrapper, duration) {
+    // Reset de l'animation pour pouvoir la relancer proprement
+    track.style.animation = 'none';
+    track.style.transform = 'none';
+    // Force un reflow pour que le navigateur prenne en compte le reset
+    track.offsetHeight;
+
+    // Position de départ calculée
+    const startY = computeStartY(wrapper, track);
+    track.style.setProperty('--start-y', startY + 'px');
+
+    // Relance l'animation
+    track.style.animation = '';
+    track.style.animationDuration = duration + 's';
+
+    attachEndListener(track);
+  }
+
   function renderCredits(lines, sheetDuration) {
     const track = document.getElementById('credits-track');
     track.innerHTML = '';
@@ -602,13 +647,12 @@
       track.appendChild(el);
     });
 
+    const wrapper = document.getElementById('credits-wrapper');
     const duration = sheetDuration || 30;
     track._duration = duration;
-    track.style.animation = 'none';
-    track.offsetHeight;
-    track.style.animation = '';
-    track.style.animationDuration = duration + 's';
-    attachEndListener(track);
+
+    // Démarre le scroll en tenant compte de la position réelle du texte
+    startCreditsScroll(track, wrapper, duration);
 
     document.getElementById('credits-loading').style.display = 'none';
     document.getElementById('credits-content').style.display = 'block';
@@ -631,16 +675,15 @@
 
   function replayCredits() {
     const track = document.getElementById('credits-track');
+    const wrapper = document.getElementById('credits-wrapper');
     document.getElementById('end-screen').classList.remove('visible');
     document.getElementById('controls').style.display = 'flex';
     isPaused = false;
     document.getElementById('btn-pause').textContent = '⏸ Pause';
     track.classList.remove('paused');
-    track.style.animation = 'none';
-    track.offsetHeight;
-    track.style.animation = '';
-    track.style.animationDuration = (track._duration || 30) + 's';
-    attachEndListener(track);
+
+    // Relance avec recalcul de la position de départ
+    startCreditsScroll(track, wrapper, track._duration || 30);
   }
 
   function openModal() {
