@@ -105,8 +105,6 @@
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
     mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
   }
-  /* ⚠️ Plus de transform par défaut : le JS positionne la track au démarrage.
-     Sinon getBoundingClientRect() renvoie une position faussée. */
   #credits-track {
     text-align: center;
     padding: 40px 20px 60px;
@@ -156,7 +154,6 @@
   #modal-status.success { color: #7db87d; }
   #modal-status.error { color: #c87070; }
 
-  /* ── BOOT ── */
   #boot {
     position: fixed; inset: 0; z-index: 900;
     background: var(--dark);
@@ -198,7 +195,6 @@
   }
   @keyframes bootBlink { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
 
-  /* ── SERVER STATE ── */
   #serverState {
     display: none;
     position: fixed; inset: 0; z-index: 950;
@@ -360,9 +356,6 @@
 </div>
 
 <script>
-  // ══════════════════════════════════════════════
-  //  CONFIG
-  // ══════════════════════════════════════════════
   const CONFIG = {
     API_BASE:            'https://nath.tailffd3b0.ts.net/credits/api',
     EMAILJS_PUBLIC_KEY:  'NxGFGvdon1YudMbyy',
@@ -377,7 +370,6 @@
   let isPaused    = false;
   let currentSheet = null;
 
-  // Web Animations API state
   let currentAnim = null;
   let modalPaused = false;
   let currentDuration = 30;
@@ -569,27 +561,22 @@
   // ══════════════════════════════════════════════
   //  SCROLL (Web Animations API)
   //
-  //  Mesure fiable via getBoundingClientRect() :
-  //  → track.getBoundingClientRect().top = début de la track
-  //  → firstText.getBoundingClientRect().top = début du 1er texte
-  //  → firstTextY = écart vertical entre les deux
-  //
-  //  On place le bord BAS du 1er texte à 88% de la hauteur visible
-  //  (juste au-dessus du fondu bas du mask) → visible dès le lancement.
+  //  Ordre important :
+  //   1. Afficher #credits-content (sinon wrapper.clientHeight = 0)
+  //   2. Attendre 2 rAF (layout calculé)
+  //   3. Mesurer via getBoundingClientRect()
+  //   4. Lancer l'animation
   // ══════════════════════════════════════════════
   function startCreditsScroll(duration) {
     const track   = document.getElementById('credits-track');
     const wrapper = document.getElementById('credits-wrapper');
 
-    // 1) Stop l'anim en cours + reset du transform inline
     if (currentAnim) { currentAnim.cancel(); currentAnim = null; }
     track.style.transform = '';
+    void track.offsetHeight;   // force reflow
 
-    // 2) Force reflow pour que le navigateur recalcule le layout
-    void track.offsetHeight;
-
-    // 3) Mesure via getBoundingClientRect (fiable même si offsetParent est décalé)
-    const wrapperH = wrapper.clientHeight;
+    // Mesure fiable
+    const wrapperH    = wrapper.clientHeight;
     const trackRect   = track.getBoundingClientRect();
     const firstText   = track.querySelector('.credit-line:not(.empty)');
     const firstTextY  = firstText
@@ -597,10 +584,10 @@
       : 0;
     const firstTextH  = firstText ? firstText.offsetHeight : 0;
 
-    // 4) Position de départ : bord bas du 1er texte à 88% de la hauteur du wrapper
-    const startY = (wrapperH * 0.88) - firstTextY - firstTextH;
+    // Bord bas du 1er texte à 95% de la hauteur du wrapper
+    // → visible tout en bas, un peu plus bas qu'avant (88%)
+    const startY = (wrapperH * 0.95) - firstTextY - firstTextH;
 
-    // 5) Animation
     currentAnim = track.animate(
       [
         { transform: `translateY(${startY}px)` },
@@ -657,12 +644,16 @@
 
     const duration = sheetDuration || 30;
 
-    // Double rAF pour être sûr que le layout est calculé (fonts, wrap, etc.)
+    // ⚡ ÉTAPE 1 : On affiche le contenu AVANT de mesurer.
+    // Sans ça, #credits-wrapper a une hauteur de 0 au 1er lancement
+    // et le calcul de startY est faussé.
+    document.getElementById('credits-loading').style.display = 'none';
+    document.getElementById('credits-content').style.display = 'block';
+
+    // ⚡ ÉTAPE 2 : On attend que le layout soit calculé (2 rAF = sûr)
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         startCreditsScroll(duration);
-        document.getElementById('credits-loading').style.display = 'none';
-        document.getElementById('credits-content').style.display = 'block';
       });
     });
   }
@@ -747,9 +738,6 @@
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  // ══════════════════════════════════════════════
-  //  GO
-  // ══════════════════════════════════════════════
   bootCheck();
 </script>
 </body>
