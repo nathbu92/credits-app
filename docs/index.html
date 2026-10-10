@@ -94,6 +94,8 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   #credits-content { display: none; }
+  /* Pendant la mesure : contenu dans le flux mais invisible (layout calculé) */
+  #credits-content.measuring { visibility: hidden; }
 
   header { text-align: center; padding: 60px 20px 30px; }
   header::after { content: ''; display: block; width: 80px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 24px auto 0; }
@@ -561,33 +563,47 @@
   // ══════════════════════════════════════════════
   //  SCROLL (Web Animations API)
   //
-  //  Ordre important :
-  //   1. Afficher #credits-content (sinon wrapper.clientHeight = 0)
-  //   2. Attendre 2 rAF (layout calculé)
-  //   3. Mesurer via getBoundingClientRect()
-  //   4. Lancer l'animation
+  //  Séquence anti-flash :
+  //   1. Afficher le contenu en `visibility: hidden`
+  //      → layout calculé mais rien de visible
+  //   2. Mesurer wrapper + premier texte
+  //   3. Positionner la track via transform inline
+  //   4. Rendre visible (retrait de .measuring)
+  //   5. Lancer l'animation (part de la même position)
   // ══════════════════════════════════════════════
-  function startCreditsScroll(duration) {
+  function prepareAndStartScroll(duration) {
     const track   = document.getElementById('credits-track');
     const wrapper = document.getElementById('credits-wrapper');
+    const content = document.getElementById('credits-content');
 
+    // Reset anim précédente
     if (currentAnim) { currentAnim.cancel(); currentAnim = null; }
     track.style.transform = '';
-    void track.offsetHeight;   // force reflow
+    void track.offsetHeight;
+
+    // Masqué mais dans le flux
+    content.classList.add('measuring');
 
     // Mesure fiable
-    const wrapperH    = wrapper.clientHeight;
-    const trackRect   = track.getBoundingClientRect();
-    const firstText   = track.querySelector('.credit-line:not(.empty)');
-    const firstTextY  = firstText
+    const wrapperH   = wrapper.clientHeight;
+    const trackRect  = track.getBoundingClientRect();
+    const firstText  = track.querySelector('.credit-line:not(.empty)');
+    const firstTextY = firstText
       ? firstText.getBoundingClientRect().top - trackRect.top
       : 0;
-    const firstTextH  = firstText ? firstText.offsetHeight : 0;
+    const firstTextH = firstText ? firstText.offsetHeight : 0;
 
     // Bord bas du 1er texte à 95% de la hauteur du wrapper
-    // → visible tout en bas, un peu plus bas qu'avant (88%)
     const startY = (wrapperH * 0.95) - firstTextY - firstTextH;
 
+    // Positionner AVANT de rendre visible (aucun flash)
+    track.style.transform = `translateY(${startY}px)`;
+
+    // Révéler
+    content.classList.remove('measuring');
+    document.getElementById('credits-loading').style.display = 'none';
+
+    // Lancer l'anim (démarre exactement à startY, aucun saut visible)
     currentAnim = track.animate(
       [
         { transform: `translateY(${startY}px)` },
@@ -644,16 +660,13 @@
 
     const duration = sheetDuration || 30;
 
-    // ⚡ ÉTAPE 1 : On affiche le contenu AVANT de mesurer.
-    // Sans ça, #credits-wrapper a une hauteur de 0 au 1er lancement
-    // et le calcul de startY est faussé.
-    document.getElementById('credits-loading').style.display = 'none';
+    // Afficher (le CSS .measuring garde tout invisible pendant la mesure)
     document.getElementById('credits-content').style.display = 'block';
 
-    // ⚡ ÉTAPE 2 : On attend que le layout soit calculé (2 rAF = sûr)
+    // 2 rAF pour être sûr que le layout + fonts sont prêts
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        startCreditsScroll(duration);
+        prepareAndStartScroll(duration);
       });
     });
   }
@@ -678,7 +691,8 @@
   function replayCredits() {
     document.getElementById('end-screen').classList.remove('visible');
     document.getElementById('controls').style.display = 'flex';
-    startCreditsScroll(currentDuration);
+    // Le contenu est déjà là, on refait juste la mesure + anim
+    prepareAndStartScroll(currentDuration);
   }
 
   function openModal() {
