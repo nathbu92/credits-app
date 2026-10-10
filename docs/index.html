@@ -105,12 +105,12 @@
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
     mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
   }
-  /* Plus d'animation CSS : c'est le JS qui pilote le scroll via Web Animations API */
+  /* ⚠️ Plus de transform par défaut : le JS positionne la track au démarrage.
+     Sinon getBoundingClientRect() renvoie une position faussée. */
   #credits-track {
     text-align: center;
     padding: 40px 20px 60px;
     will-change: transform;
-    transform: translateY(100vh); /* position par défaut avant démarrage, pour éviter un flash */
   }
 
   .credit-line { font-weight: 300; font-size: clamp(0.95rem, 2.2vw, 1.15rem); letter-spacing: 0.08em; color: var(--text); line-height: 1.9; }
@@ -383,7 +383,7 @@
   let currentDuration = 30;
 
   // ══════════════════════════════════════════════
-  //  SERVER STATE (nuit / erreur) + retry auto 60s
+  //  SERVER STATE
   // ══════════════════════════════════════════════
   let serverStateShown = false;
   let serverRetryTimer = null;
@@ -569,34 +569,38 @@
   // ══════════════════════════════════════════════
   //  SCROLL (Web Animations API)
   //
-  //  Principe :
-  //   - On mesure la position réelle du premier texte
-  //   - On place son bord BAS à ~88% de la hauteur du wrapper (juste
-  //     au-dessus de la zone de fondu du mask) → l'utilisateur voit
-  //     le texte dès le lancement
-  //   - On anime vers translateY(-100%) → tout monte et sort par le haut
+  //  Mesure fiable via getBoundingClientRect() :
+  //  → track.getBoundingClientRect().top = début de la track
+  //  → firstText.getBoundingClientRect().top = début du 1er texte
+  //  → firstTextY = écart vertical entre les deux
+  //
+  //  On place le bord BAS du 1er texte à 88% de la hauteur visible
+  //  (juste au-dessus du fondu bas du mask) → visible dès le lancement.
   // ══════════════════════════════════════════════
   function startCreditsScroll(duration) {
     const track   = document.getElementById('credits-track');
     const wrapper = document.getElementById('credits-wrapper');
 
-    // Stop l'anim en cours
+    // 1) Stop l'anim en cours + reset du transform inline
     if (currentAnim) { currentAnim.cancel(); currentAnim = null; }
-
-    // Mesure
-    const wrapperH = wrapper.clientHeight;
-    const firstText = track.querySelector('.credit-line:not(.empty)');
-    const firstTextY = firstText ? firstText.offsetTop : 0;
-    const firstTextH = firstText ? firstText.offsetHeight : 0;
-
-    // Bord bas du premier texte à 88% de la hauteur visible
-    // → visible immédiatement, juste au-dessus du fondu bas
-    const startY = (wrapperH * 0.88) - firstTextY - firstTextH;
-
-    // Reset inline transform éventuel
     track.style.transform = '';
 
-    // Animation
+    // 2) Force reflow pour que le navigateur recalcule le layout
+    void track.offsetHeight;
+
+    // 3) Mesure via getBoundingClientRect (fiable même si offsetParent est décalé)
+    const wrapperH = wrapper.clientHeight;
+    const trackRect   = track.getBoundingClientRect();
+    const firstText   = track.querySelector('.credit-line:not(.empty)');
+    const firstTextY  = firstText
+      ? firstText.getBoundingClientRect().top - trackRect.top
+      : 0;
+    const firstTextH  = firstText ? firstText.offsetHeight : 0;
+
+    // 4) Position de départ : bord bas du 1er texte à 88% de la hauteur du wrapper
+    const startY = (wrapperH * 0.88) - firstTextY - firstTextH;
+
+    // 5) Animation
     currentAnim = track.animate(
       [
         { transform: `translateY(${startY}px)` },
@@ -653,7 +657,7 @@
 
     const duration = sheetDuration || 30;
 
-    // On attend 1 frame pour que le layout soit calculé, puis on démarre
+    // Double rAF pour être sûr que le layout est calculé (fonts, wrap, etc.)
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         startCreditsScroll(duration);
